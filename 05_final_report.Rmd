@@ -52,7 +52,7 @@ individual_treatment <- individual_dat %>% filter(dpisofirme == 1)
 individual_control <- individual_dat %>% filter(dpisofirme == 0)
 
 treat_cont_i <- individual_dat$dpisofirme
-treat_cont_hh <- individual_dat$dpisofirme
+treat_cont_hh <- household_dat$dpisofirme
 ```
 
 # Model 1: no controls
