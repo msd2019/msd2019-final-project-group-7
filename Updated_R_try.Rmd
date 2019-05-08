@@ -1,0 +1,473 @@
+---
+title: "MSD Final Project"
+author: "Nancy Thomas (nkt2111), Patrick Alrassy (pa2492), Brigid Lynch (bml2133)"
+date: "`r Sys.time()`"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_depth: '3'
+  pdf_document:
+    toc: yes
+    toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+library(here)
+library(scales)
+library(modelr)
+library(tidyverse)
+library(haven)
+
+theme_set(theme_bw())
+
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+# Import Data
+
+Read in the two data files used for replication of the main results. The houshold dataset has information at the houshold level and includes data from both the 2000 Mexican Census and the 2005 Survey. The individual dataset has information at the individual level and includes data from the 2005 Survey.
+
+```{r read-data}
+household_dat <- read_dta(file = "PisoFirme_AEJPol-20070024_household.dta")
+individual_dat <- read_dta(file = "PisoFirme_AEJPol-20070024_individual.dta")
+
+
+
+```
+
+Divides the data into treatment and control groups.
+
+```{r divide-treatment-control}
+household_treatment <- household_dat %>% filter(dpisofirme == 1)
+household_control <- household_dat %>% filter(dpisofirme == 0)
+individual_treatment <- individual_dat %>% filter(dpisofirme == 1)
+individual_control <- individual_dat %>% filter(dpisofirme == 0)
+```
+
+
+# Model 1: no controls
+
+```{r model-1}
+model_1_i <- function(dependent) {
+  dummy_i<- individual_dat$dpisofirme[!is.na(dependent)]
+  dependent_updated <- dependent[!is.na(dependent)]
+  return(coef(lm(dependent_updated ~ dummy_i)))
+}
+
+
+model_1_hh <- function(dependent) {
+  dummy_hh <- household_dat$dpisofirme[!is.na(dependent)]
+  dependent_updated <- dependent[!is.na(dependent)]
+  return(coef(lm(dependent_updated ~ dummy_hh )))
+}
+model_1_coeff <- c(model_1_hh(household_dat$S_shcementfloor)[2],model_1_hh(household_dat$S_cementfloorkit)[2],model_1_hh(household_dat$S_cementfloordin)[2],model_1_hh(household_dat$S_cementfloorbat)[2],model_1_hh(household_dat$S_cementfloorbed)[2],model_1_i(individual_dat$S_parcount)[2],model_1_i(individual_dat$S_diarrhea)[2],model_1_i(individual_dat$S_anemia)[2],model_1_i(individual_dat$S_mccdts)[2],model_1_i(individual_dat$S_pbdypct)[2],model_1_i(individual_dat$S_haz)[2],model_1_i(individual_dat$S_whz)[2],model_1_hh(household_dat$S_satisfloor)[2],model_1_hh(household_dat$S_satishouse)[2],model_1_hh(household_dat$S_satislife)[2],model_1_hh(household_dat$S_cesds)[2],model_1_hh(household_dat$S_pss)[2])
+model_1_intercept <- c(model_1_hh(household_dat$S_shcementfloor)[1],model_1_hh(household_dat$S_cementfloorkit)[1],model_1_hh(household_dat$S_cementfloordin)[1],model_1_hh(household_dat$S_cementfloorbat)[1],model_1_hh(household_dat$S_cementfloorbed)[1],model_1_i(individual_dat$S_parcount)[1],model_1_i(individual_dat$S_diarrhea)[1],model_1_i(individual_dat$S_anemia)[1],model_1_i(individual_dat$S_mccdts)[1],model_1_i(individual_dat$S_pbdypct)[1],model_1_i(individual_dat$S_haz)[1],model_1_i(individual_dat$S_whz)[1],model_1_hh(household_dat$S_satisfloor)[1],model_1_hh(household_dat$S_satishouse)[1],model_1_hh(household_dat$S_satislife)[1],model_1_hh(household_dat$S_cesds)[1],model_1_hh(household_dat$S_pss)[1])
+
+
+
+variables <- c("share_cement_floors", "kitchen", "dining_room", "bathroom", "bedroom", "parasite","diarrhea","anemia","MacArther","Peabody","height","weight","Sat_floor","Sat_House","Sat_life","Depression","Stress")
+
+Model_1 <- data.frame(var = variables,coeff_1 = model_1_coeff,int_1 = model_1_intercept)
+```
+
+# Model 2: age, demographic, and health-habit controls
+
+```{r model-2}
+individual_dat$S_HHpeople[is.na(individual_dat$S_HHpeople)]<- 0
+individual_dat$S_rooms[is.na(individual_dat$S_rooms)]<- 0
+individual_dat$S_age[is.na(individual_dat$S_age)]<- 0
+individual_dat$S_gender[is.na(individual_dat$S_gender)]<- 0
+individual_dat$S_childma[is.na(individual_dat$S_childma)]<- 0
+individual_dat$S_childmaage[is.na(individual_dat$S_childmaage)]<- 0
+individual_dat$S_childmaeduc[is.na(individual_dat$S_childmaeduc)]<- 0
+individual_dat$S_childpa[is.na(individual_dat$S_childpa)]<- 0
+individual_dat$S_childpaage[is.na(individual_dat$S_childpaage)]<- 0
+individual_dat$S_childpaeduc[is.na(individual_dat$S_childpaeduc)]<- 0
+individual_dat$S_waterland[is.na(individual_dat$S_waterland)]<- 0
+individual_dat$S_waterhouse[is.na(individual_dat$S_waterhouse)]<- 0
+individual_dat$S_electricity[is.na(individual_dat$S_electricity)]<- 0
+individual_dat$S_hasanimals[is.na(individual_dat$S_hasanimals)]<- 0
+individual_dat$S_animalsinside[is.na(individual_dat$S_animalsinside)]<- 0
+individual_dat$S_garbage[is.na(individual_dat$S_garbage)]<- 0
+individual_dat$S_washhands[is.na(individual_dat$S_washhands)]<- 0
+
+model_2_i <- function(dependent) {
+  x1<- individual_dat$S_HHpeople[!is.na(dependent)]
+  x2<-individual_dat$S_rooms[!is.na(dependent)]
+  x3<-individual_dat$S_age[!is.na(dependent)]
+  x4<-individual_dat$S_gender[!is.na(dependent)]
+  x5<-individual_dat$S_childma[!is.na(dependent)]
+  x6<-individual_dat$S_childmaage[!is.na(dependent)]
+  x7<-individual_dat$S_childmaeduc[!is.na(dependent)] 
+  x8<-individual_dat$S_childpa[!is.na(dependent)]
+  x9<-individual_dat$S_childpaage[!is.na(dependent)] 
+  x10<-individual_dat$S_childpaeduc[!is.na(dependent)]
+  x11<-individual_dat$S_waterland[!is.na(dependent)]
+  x12<-individual_dat$S_waterhouse[!is.na(dependent)] 
+  x13<-individual_dat$S_electricity[!is.na(dependent)]
+  x14<-individual_dat$S_hasanimals[!is.na(dependent)]
+  x15<-individual_dat$S_animalsinside[!is.na(dependent)]
+  x16<-individual_dat$S_garbage[!is.na(dependent)]
+  x17<-individual_dat$S_washhands[!is.na(dependent)]
+  x18<- individual_dat$dpisofirme[!is.na(dependent)]
+  updated_dependent<- dependent[!is.na(dependent)]
+  
+  
+  return(coef(lm( updated_dependent ~ x18 + x1 + x2 + x3  + x4+ x5+ x6+ x7+ x8+ x9+ x10+ x11+ x12+ x13+ x14+ x15+ x16+ x17 )))
+}
+
+
+
+household_dat$S_HHpeople[is.na(household_dat$S_HHpeople)]<-0
+household_dat$S_headage[is.na(household_dat$S_headage)]<-0
+household_dat$S_spouseage[is.na(household_dat$S_spouseage)]<-0
+household_dat$S_headeduc[is.na(household_dat$S_headeduc)]<-0
+household_dat$S_spouseeduc[is.na(household_dat$S_spouseeduc)]<-0
+household_dat$S_dem1[is.na(household_dat$S_dem1)]<-0
+household_dat$S_dem2[is.na(household_dat$S_dem2)] <-0
+household_dat$S_dem3[is.na(household_dat$S_dem3)]<-0
+household_dat$S_dem4[is.na(household_dat$S_dem4)] <-0
+household_dat$S_dem5[is.na(household_dat$S_dem5)]<-0
+household_dat$S_dem6[is.na(household_dat$S_dem6)]<-0
+household_dat$S_dem7[is.na(household_dat$S_dem7)] <-0
+household_dat$S_dem8[is.na(household_dat$S_dem8)]<-0
+household_dat$S_waterland[is.na(household_dat$S_waterland)]<-0
+household_dat$S_waterhouse[is.na(household_dat$S_waterhouse)]<-0
+household_dat$S_electricity[is.na(household_dat$S_electricity)]<-0
+household_dat$S_hasanimals[is.na(household_dat$S_hasanimals)]<-0
+household_dat$S_animalsinside[is.na(household_dat$S_animalsinside)]<-0
+household_dat$S_garbage[is.na(household_dat$S_garbage)]<-0
+household_dat$S_washhands[is.na(household_dat$S_washhands)]<-0
+
+
+
+model_2_hh <- function(dependent) {
+  x1<- household_dat$S_HHpeople[!is.na(dependent)]
+  x2<-household_dat$S_headage[!is.na(dependent)]
+  x3<-household_dat$S_spouseage[!is.na(dependent)]
+  x4<-household_dat$S_headeduc[!is.na(dependent)]
+  x5<-household_dat$S_spouseeduc[!is.na(dependent)]
+  x6<-household_dat$S_dem1[!is.na(dependent)]
+  x7<-household_dat$S_dem2[!is.na(dependent)] 
+  x8<-household_dat$S_dem3[!is.na(dependent)]
+  x9<-household_dat$S_dem4[!is.na(dependent)] 
+  x10<-household_dat$S_dem5[!is.na(dependent)]
+  x11<-household_dat$S_dem6[!is.na(dependent)]
+  x12<-household_dat$S_dem7[!is.na(dependent)] 
+  x13<-household_dat$S_dem8[!is.na(dependent)]
+  x14<-household_dat$S_waterland[!is.na(dependent)]
+  x15<-household_dat$S_waterhouse[!is.na(dependent)]
+  x16<-household_dat$S_electricity[!is.na(dependent)]
+  x17<-household_dat$S_hasanimals[!is.na(dependent)]
+  x18<-household_dat$S_animalsinside[!is.na(dependent)]
+  x19<-household_dat$S_garbage[!is.na(dependent)]
+  x20<-household_dat$S_washhands[!is.na(dependent)]
+  x21<- household_dat$dpisofirme[!is.na(dependent)]
+  updated_dependent<- dependent[!is.na(dependent)]
+  
+  return(coef(lm(updated_dependent ~ x21 + x1 + x2 + x3  + x4+ x5+ x6+ x7+ x8+ x9+ x10+ x11+ x12+ x13+ x14+ x15+ x16+ x17+ x18 + x19+ x20)))
+}
+  
+model_2_coeff <- c(model_2_hh(household_dat$S_shcementfloor)[2],model_2_hh(household_dat$S_cementfloorkit)[2],model_2_hh(household_dat$S_cementfloordin)[2],model_2_hh(household_dat$S_cementfloorbat)[2],model_2_hh(household_dat$S_cementfloorbed)[2],model_2_i(individual_dat$S_parcount)[2],model_2_i(individual_dat$S_diarrhea)[2],model_2_i(individual_dat$S_anemia)[2],model_2_i(individual_dat$S_mccdts)[2],model_2_i(individual_dat$S_pbdypct)[2],model_2_i(individual_dat$S_haz)[2],model_2_i(individual_dat$S_whz)[2],model_2_hh(household_dat$S_satisfloor)[2],model_2_hh(household_dat$S_satishouse)[2],model_2_hh(household_dat$S_satislife)[2],model_2_hh(household_dat$S_cesds)[2],model_2_hh(household_dat$S_pss)[2])
+
+
+
+
+
+
+Model_2 <- data.frame(var = variables,coeff_2 = model_2_coeff,int_2 = model_2_intercept)
+```
+
+# Model 3: age, demographic, health-habit and public social programs controls
+
+```{r model-3}
+individual_dat$S_cashtransfers[is.na(individual_dat$S_cashtransfers)]<- 0
+individual_dat$S_milkprogram[is.na(individual_dat$S_milkprogram)]<- 0
+individual_dat$S_foodprogram[is.na(individual_dat$S_foodprogram)]<- 0
+individual_dat$S_seguropopular[is.na(individual_dat$S_seguropopular)]<- 0
+
+
+model_3_i <- function(dependent) {
+  x1<- individual_dat$S_HHpeople[!is.na(dependent)]
+  x2<-individual_dat$S_rooms[!is.na(dependent)]
+  x3<-individual_dat$S_age[!is.na(dependent)]
+  x4<-individual_dat$S_gender[!is.na(dependent)]
+  x5<-individual_dat$S_childma[!is.na(dependent)]
+  x6<-individual_dat$S_childmaage[!is.na(dependent)]
+  x7<-individual_dat$S_childmaeduc[!is.na(dependent)] 
+  x8<-individual_dat$S_childpa[!is.na(dependent)]
+  x9<-individual_dat$S_childpaage[!is.na(dependent)] 
+  x10<-individual_dat$S_childpaeduc[!is.na(dependent)]
+  x11<-individual_dat$S_waterland[!is.na(dependent)]
+  x12<-individual_dat$S_waterhouse[!is.na(dependent)] 
+  x13<-individual_dat$S_electricity[!is.na(dependent)]
+  x14<-individual_dat$S_hasanimals[!is.na(dependent)]
+  x15<-individual_dat$S_animalsinside[!is.na(dependent)]
+  x16<-individual_dat$S_garbage[!is.na(dependent)]
+  x17<-individual_dat$S_washhands[!is.na(dependent)]
+  x18<-individual_dat$S_cashtransfers[!is.na(dependent)]
+  x19<-individual_dat$S_milkprogram[!is.na(dependent)]
+  x20<-individual_dat$S_foodprogram[!is.na(dependent)]
+  x21<-individual_dat$S_seguropopular[!is.na(dependent)]
+  x22<- individual_dat$dpisofirme[!is.na(dependent)]
+  updated_dependent<- dependent[!is.na(dependent)]
+  
+  
+  
+  
+  
+  return(coef(lm( updated_dependent ~ x22 + x1 + x2 + x3  + x4+ x5+ x6+ x7+ x8+ x9+ x10+ x11+ x12+ x13+ x14+ x15+ x16+ x17+ x18+x19 +x20+x22 )))
+}
+
+household_dat$S_cashtransfers[is.na(household_dat$S_cashtransfers)]<- 0
+household_dat$S_milkprogram[is.na(household_dat$S_milkprogram)]<- 0
+household_dat$S_foodprogram[is.na(household_dat$S_foodprogram)]<- 0
+household_dat$S_seguropopular[is.na(household_dat$S_seguropopular)]<- 0
+
+
+
+model_3_hh <- function(dependent) {
+  x1<- household_dat$S_HHpeople[!is.na(dependent)]
+  x2<-household_dat$S_headage[!is.na(dependent)]
+  x3<-household_dat$S_spouseage[!is.na(dependent)]
+  x4<-household_dat$S_headeduc[!is.na(dependent)]
+  x5<-household_dat$S_spouseeduc[!is.na(dependent)]
+  x6<-household_dat$S_dem1[!is.na(dependent)]
+  x7<-household_dat$S_dem2[!is.na(dependent)] 
+  x8<-household_dat$S_dem3[!is.na(dependent)]
+  x9<-household_dat$S_dem4[!is.na(dependent)] 
+  x10<-household_dat$S_dem5[!is.na(dependent)]
+  x11<-household_dat$S_dem6[!is.na(dependent)]
+  x12<-household_dat$S_dem7[!is.na(dependent)] 
+  x13<-household_dat$S_dem8[!is.na(dependent)]
+  x14<-household_dat$S_waterland[!is.na(dependent)]
+  x15<-household_dat$S_waterhouse[!is.na(dependent)]
+  x16<-household_dat$S_electricity[!is.na(dependent)]
+  x17<-household_dat$S_hasanimals[!is.na(dependent)]
+  x18<-household_dat$S_animalsinside[!is.na(dependent)]
+  x19<-household_dat$S_garbage[!is.na(dependent)]
+  x20<-household_dat$S_washhands[!is.na(dependent)]
+  x21<- household_dat$dpisofirme[!is.na(dependent)]
+
+  x22<-household_dat$S_cashtransfers[!is.na(dependent)]
+  x23<-household_dat$S_milkprogram[!is.na(dependent)]
+  x24<-household_dat$S_foodprogram[!is.na(dependent)]
+  x25<-household_dat$S_seguropopular[!is.na(dependent)]
+
+  
+  
+  
+   updated_dependent<- dependent[!is.na(dependent)]
+  
+  
+  
+   return(coef(lm(updated_dependent ~ x21 + x1 + x2 + x3  + x4+ x5+ x6+ x7+ x8+ x9+ x10+ x11+ x12+ x13+ x14+ x15+ x16+ x17+ x18 + x19+ x20 + x22 + x23 + x24+ x25 )))
+  
+}
+
+model_3_coeff <- c(model_3_hh(household_dat$S_shcementfloor)[2],model_3_hh(household_dat$S_cementfloorkit)[2],model_3_hh(household_dat$S_cementfloordin)[2],model_3_hh(household_dat$S_cementfloorbat)[2],model_3_hh(household_dat$S_cementfloorbed)[2],model_3_i(individual_dat$S_parcount)[2],model_3_i(individual_dat$S_diarrhea)[2],model_3_i(individual_dat$S_anemia)[2],model_3_i(individual_dat$S_mccdts)[2],model_3_i(individual_dat$S_pbdypct)[2],model_3_i(individual_dat$S_haz)[2],model_3_i(individual_dat$S_whz)[2],model_3_hh(household_dat$S_satisfloor)[2],model_3_hh(household_dat$S_satishouse)[2],model_3_hh(household_dat$S_satislife)[2],model_3_hh(household_dat$S_cesds)[2],model_3_hh(household_dat$S_pss)[2])
+
+model_3_intercept <- c(model_3_hh(household_dat$S_shcementfloor)[1],model_3_hh(household_dat$S_cementfloorkit)[1],model_3_hh(household_dat$S_cementfloordin)[1],model_3_hh(household_dat$S_cementfloorbat)[1],model_3_hh(household_dat$S_cementfloorbed)[1],model_3_i(individual_dat$S_parcount)[1],model_3_i(individual_dat$S_diarrhea)[1],model_3_i(individual_dat$S_anemia)[1],model_3_i(individual_dat$S_mccdts)[1],model_3_i(individual_dat$S_pbdypct)[1],model_3_i(individual_dat$S_haz)[1],model_3_i(individual_dat$S_whz)[1],model_3_hh(household_dat$S_satisfloor)[1],model_3_hh(household_dat$S_satishouse)[1],model_3_hh(household_dat$S_satislife)[1],model_3_hh(household_dat$S_cesds)[1],model_3_hh(household_dat$S_pss)[1])
+
+
+Model_3 <- data.frame(var = variables,coeff_3 = model_3_coeff,int_3 = model_3_intercept)
+```
+
+# Control Group Means and Standard Deviations
+
+```{r control-mean-sd}
+
+control_mean <- function(dependent) {
+  updated_dependent<- dependent[!is.na(dependent)]
+  return(mean(updated_dependent))
+}
+
+control_sd <- function(dependent) {
+  updated_dependent<- dependent[!is.na(dependent)]
+  return(sd(updated_dependent))
+}
+
+control_mean <- c(control_mean(household_control$S_shcementfloor), control_mean(household_control$S_cementfloorkit), control_mean(household_control$S_cementfloordin), control_mean(household_control$S_cementfloorbat),control_mean(household_control$S_cementfloorbed),control_mean(individual_control$S_parcount),control_mean(individual_control$S_diarrhea),control_mean(individual_control$S_anemia),control_mean(individual_control$S_mccdts),control_mean(individual_control$S_pbdypct),control_mean(individual_control$S_haz),control_mean(individual_control$S_whz),control_mean(household_control$S_satisfloor),control_mean(household_control$S_satishouse),control_mean(household_control$S_satislife),control_mean(household_control$S_cesds),control_mean(household_control$S_pss))
+
+control_sd <- c(control_sd(household_control$S_shcementfloor), control_sd(household_control$S_cementfloorkit), control_sd(household_control$S_cementfloordin),control_sd(household_control$S_cementfloorbat),control_sd(household_control$S_cementfloorbed),control_sd(individual_control$S_parcount),control_sd(individual_control$S_diarrhea),control_sd(individual_control$S_anemia),control_sd(individual_control$S_mccdts),control_sd(individual_control$S_pbdypct),control_sd(individual_control$S_haz),control_sd(individual_control$S_whz),control_sd(household_control$S_satisfloor),control_sd(household_control$S_satishouse),control_sd(household_control$S_satislife),control_sd(household_control$S_cesds),control_sd(household_control$S_pss))
+
+
+
+
+
+Mean_SD <- data.frame(var = variables, control_group_mean = control_mean, control_group_sd = control_sd)
+```
+
+# Compile Results into Tables 4, 5, 6
+
+```{r model-put-together}
+Model <- Model_1 %>% left_join(Model_2, by = "var") %>% left_join(Model_3, by = "var") %>% left_join(Mean_SD, by = "var")
+
+Table_4 <- Model %>% filter(var == "share_cement_floors" | var == "kitchen" | var == "dining_room" | var == "bathroom" | var == "bedroom") %>% select(var, control_group_mean, control_group_sd, coeff_1, coeff_2, coeff_3)%>%mutate(coef_overmean1=100*coeff_1/control_group_mean)%>%mutate(coef_overmean2=100*coeff_2/control_group_mean)%>%mutate(coef_overmean3=100*coeff_3/control_group_mean)%>%rename("Model_1" = coeff_1, "Model_2" = coeff_2, "Model_3" = coeff_3, "Dependent" = var)
+
+Table_5 <- Model %>% filter(var == "parasite" | var == "diarrhea" | var == "anemia" | var == "MacArthur" | var == "Peabody" | var == "height" | var == "weight") %>% select(var, control_group_mean, control_group_sd, coeff_1, coeff_2, coeff_3)%>%mutate(coef_overmean1=100*coeff_1/control_group_mean)%>%mutate(coef_overmean2=100*coeff_2/control_group_mean)%>%mutate(coef_overmean3=100*coeff_3/control_group_mean) %>% rename("Model_1" = coeff_1, "Model_2" = coeff_2, "Model_3" = coeff_3, "Dependent" = var)
+
+Table_6 <- Model %>% filter(var == "Sat_floor" | var == "Sat_House" | var == "Sat_life" | var == "Depression" | var == "Stress") %>% select(var, control_group_mean, control_group_sd, coeff_1, coeff_2, coeff_3)%>%mutate(coef_overmean1=100*coeff_1/control_group_mean)%>%mutate(coef_overmean2=100*coeff_2/control_group_mean)%>%mutate(coef_overmean3=100*coeff_3/control_group_mean) %>% rename("Model_1" = coeff_1, "Model_2" = coeff_2, "Model_3" = coeff_3, "Dependent" = var)
+Table_4
+Table_5
+Table_6
+```
+
+```{r logistic-regression}
+household_dat$dpisofirme <- factor(household_dat$dpisofirme)
+
+#smaller_household <- household_dat %>% select(S_shcementfloor, S_cementfloorkit, S_cementfloordin, S_cementfloorbat, S_cementfloorbed, S_satisfloor, S_satishouse, S_satislife, S_cesds, S_pss)
+
+controlled_household <- household_dat %>% select(S_HHpeople, S_headage, S_spouseage, S_headeduc, S_spouseeduc, S_dem1, S_dem2, S_dem3, S_dem4, S_dem5, S_dem6, S_dem7, S_dem8, S_waterland, S_waterhouse, S_electricity, S_hasanimals, S_animalsinside, S_garbage, S_washhands, S_cashtransfers, S_milkprogram, S_foodprogram, S_seguropopular)
+
+num_rows <- nrow(controlled_household)
+frac_train <- 0.8
+num_train <- floor(num_rows * frac_train)
+
+ndx <- sample(1:num_rows, num_train, replace=F)
+
+data_train <- controlled_household[ndx, ]
+all_train <- household_dat[ndx, ]
+data_test <- controlled_household[-ndx, ]
+all_test <- household_dat[-ndx, ]
+
+model <- glm(all_train$dpisofirme ~., data=data_train, family = "binomial")
+
+df <- data.frame(actual = all_test$dpisofirme, log_odds = predict(model, data_test)) %>% mutate(pred = ifelse(log_odds > 0, '1', '0'))
+
+table(actual = df$actual, predicted = df$pred)
+
+# accuracy: fraction of correct classifications
+df %>%summarize(acc = mean(pred == actual))
+
+# precision: fraction of positive predictions that are actually true
+df %>% filter(pred == '1') %>% summarize(prec = mean(actual == '1'))
+
+# recall: fraction of true examples that we predicted to be positive
+# aka true positive rate, sensitivity
+df %>% filter(actual == '1') %>% summarize(recall = mean(pred == '1'))
+
+# false positive rate: fraction of false examples that we predicted to be positive
+df %>% filter(actual == '0') %>% summarize(fpr = mean(pred == '1'))
+
+#probs <- data.frame(predict(model,data_test, type="raw"))
+
+#plot_data <- data_test
+#plot_data$probs <- predict(model, data_test, type="response")
+#ggplot(plot_data, aes(x = probs)) + geom_histogram(binwidth = 0.01) + xlab('Predicted probability of Treatment') + ylab('Number of examples')
+
+# plot calibration
+#data.frame(predicted=plot_data$probs, actual=all_test$dpisofirme) %>% group_by(predicted=round(predicted*10)/10) %>% summarize(num=n(), actual=mean(actual == "1")) %>% ggplot(data=., aes(x=predicted, y=actual, size=num)) + geom_point() + geom_abline(linetype=2) + scale_x_continuous(labels=percent, lim=c(0,1)) + scale_y_continuous(labels=percent, lim=c(0,1)) + xlab('Predicted probability of Treatment') + ylab('Percent that are actually Treatment')
+
+#pred <- prediction(plot_data$probs, yTest)
+#perf_lr <- performance(pred, measure='tpr', x.measure='fpr')
+#plot(perf_lr)
+#performance(pred, 'auc')
+```
+
+```{r}
+r_squared_hh<-function(vector){
+  return(cor(vector,as.numeric(household_dat$dpisofirme),use = "complete.obs")^2)
+}
+r_squared_i<-function(vector){
+  return(cor(vector,as.numeric(individual_dat$dpisofirme),use = "complete.obs")^2)
+}
+r_sq<-c(r_squared_hh(household_dat$S_shcementfloor),r_squared_hh(household_dat$S_cementfloorkit),r_squared_hh(household_dat$S_cementfloordin),r_squared_hh(household_dat$S_cementfloorbat),r_squared_hh(household_dat$S_cementfloorbed),r_squared_i(individual_dat$S_parcount),r_squared_i(individual_dat$S_diarrhea),r_squared_i(individual_dat$S_anemia),r_squared_i(individual_dat$S_mccdts),r_squared_i(individual_dat$S_pbdypct),r_squared_i(individual_dat$S_haz),r_squared_i(individual_dat$S_whz),r_squared_hh(household_dat$S_satisfloor),r_squared_hh(household_dat$S_satishouse),r_squared_hh(household_dat$S_satislife),r_squared_hh(household_dat$S_cesds),r_squared_hh(household_dat$S_pss)) 
+
+```
+
+```{r}
+r_squared<-data.frame(variable=variables,r_squared=r_sq)
+```
+
+```{r}
+household_dat$dpisofirme <- factor(household_dat$dpisofirme)
+
+#smaller_household <- household_dat %>% select(S_shcementfloor, S_cementfloorkit, S_cementfloordin, S_cementfloorbat, S_cementfloorbed, S_satisfloor, S_satishouse, S_satislife, S_cesds, S_pss)
+
+controlled_household <- household_dat %>%group_by(idcluster)%>%select(dpisofirme,C_blocksdirtfloor,C_HHdirtfloor,C_child05,C_households,C_people,C_rooms,C_HHpersons,C_waterland,C_waterhouse,C_waterbath,C_gasheater,C_refrigerator,C_washing,C_telephone,C_vehicle,C_overcrowding,C_poverty,C_illiterate,C_headeduc,C_dropouts515,C_employment,C_earnincome)%>%ungroup()%>%distinct()%>%select(-idcluster)
+
+num_rows <- nrow(controlled_household)
+frac_train <- 0.8
+num_train <- floor(num_rows * frac_train)
+
+ndx <- sample(1:num_rows, num_train, replace=F)
+
+data_train <- controlled_household[ndx, ]
+all_train <- controlled_household[ndx, ]
+data_test <- controlled_household[-ndx, ]
+all_test <- controlled_household[-ndx, ]
+
+model <- glm(all_train$dpisofirme ~., data=data_train, family = "binomial")
+
+df <- data.frame(actual = all_test$dpisofirme, log_odds = predict(model, data_test)) %>% mutate(pred = ifelse(log_odds > 0, '1', '0'))
+
+table(actual = df$actual, predicted = df$pred)
+
+# accuracy: fraction of correct classifications
+df %>%summarize(acc = mean(pred == actual,na.rm=T))
+
+# precision: fraction of positive predictions that are actually true
+df %>% filter(pred == '1') %>% summarize(prec = mean(actual == '1',na.rm=T))
+
+# recall: fraction of true examples that we predicted to be positive
+# aka true positive rate, sensitivity
+df %>% filter(actual == '1') %>% summarize(recall = mean(pred == '1',na.rm=T))
+
+# false positive rate: fraction of false examples that we predicted to be positive
+df %>% filter(actual == '0') %>% summarize(fpr = mean(pred == '1',na.rm=T))
+
+#probs <- data.frame(predict(model,data_test, type="raw"))
+
+#plot_data <- data_test
+#plot_data$probs <- predict(model, data_test, type="response")
+#ggplot(plot_data, aes(x = probs)) + geom_histogram(binwidth = 0.01) + xlab('Predicted probability of Treatment') + ylab('Number of examples')
+
+# plot calibration
+#data.frame(predicted=plot_data$probs, actual=all_test$dpisofirme) %>% group_by(predicted=round(predicted*10)/10) %>% summarize(num=n(), actual=mean(actual == "1")) %>% ggplot(data=., aes(x=predicted, y=actual, size=num)) + geom_point() + geom_abline(linetype=2) + scale_x_continuous(labels=percent, lim=c(0,1)) + scale_y_continuous(labels=percent, lim=c(0,1)) + xlab('Predicted probability of Treatment') + ylab('Percent that are actually Treatment')
+
+#pred <- prediction(plot_data$probs, yTest)
+#perf_lr <- performance(pred, measure='tpr', x.measure='fpr')
+#plot(perf_lr)
+#performance(pred, 'auc')
+```
+
+```{r}
+supp.labs <- c("No Pisofirme", "Pisofirme")
+names(supp.labs) <- c(0, 1)
+ ggplot(individual_dat) +
+      geom_col(aes(x =S_parcount , y = n))+facet_grid(~dpisofirme,labeller=labeller(dpisofirme=supp.labs))
+ggplot(individual_dat) +
+      geom_col(aes(x = S_pbdypct, y = log10(n)))+facet_grid(~dpisofirme,labeller=labeller(dpisofirme=supp.labs))
+ggplot(individual_dat) +
+      geom_col(aes(x = S_anemia, y = log10(n)))+facet_grid(~dpisofirme,labeller=labeller(dpisofirme=supp.labs))
+ggplot(household_dat)+
+geom_col(aes(x=S_cesds,y=log10(n)))+facet_grid(~dpisofirme,labeller=labeller(dpisofirme=supp.labs))
+ggplot(household_dat)+
+  geom_col(aes(x=S_cesds,y=n))+facet_grid(~dpisofirme,labeller=labeller(dpisofirme=supp.labs))
+ggplot(household_dat)+
+  geom_col(aes(x=S_satislife,y=n))+facet_grid(~dpisofirme,labeller=labeller(dpisofirme=supp.labs))
+
+ggplot(household_dat)+
+  geom_col(aes(x=S_satishouse,y=n))+facet_grid(~dpisofirme,labeller=labeller(dpisofirme=supp.labs))
+ggplot(household_dat)+
+  geom_col(aes(x=S_pss,y=n))+facet_grid(~dpisofirme,labeller=labeller(dpisofirme=supp.labs))
+ggplot(household_dat)+
+  geom_col(aes(x=S_shcementfloor,y=n))+facet_grid(~dpisofirme,labeller=labeller(dpisofirme=supp.labs))
+
+```
+
+household_dat %>% group_by(household_dat$S_shcementfloor, dpisofirme)
+treat <- household_dat[household_dat$dpisofirme==1,]
+length(household_dat$S_shcementfloor & household_dat$dpisofirme==1)
+is.na(
+
+household_dat$S_shcementfloor household_dat$S_cementfloorkit household_dat$S_cementfloordin household_dat$S_cementfloorbat household_dat$S_cementfloorbed
+
+household_dat$S_satisfloor household_dat$S_satishouse household_dat$S_satislife household_dat$S_cesds household_dat$S_pss
+
+household_dat$S_instcement household_dat$S_instsanita household_dat$S_restsanita household_dat$S_constceili household_dat$S_restowalls household_dat$S_improveany household_dat$S_logrent S_logsell household_dat$S_consumptionpc
+ 
+
