@@ -37,10 +37,6 @@ Read in the two data files used for replication of the main results. The houshol
 ```{r read-data}
 household_dat <- read_dta(file = "PisoFirme_AEJPol-20070024_household.dta")
 individual_dat <- read_dta(file = "PisoFirme_AEJPol-20070024_individual.dta")
-
-# replace na with 0
-household_dat[is.na(household_dat)] <- 0
-individual_dat[is.na(individual_dat)] <- 0
 ```
 
 Divides the data into treatment and control groups.
@@ -50,25 +46,27 @@ household_treatment <- household_dat %>% filter(dpisofirme == 1)
 household_control <- household_dat %>% filter(dpisofirme == 0)
 individual_treatment <- individual_dat %>% filter(dpisofirme == 1)
 individual_control <- individual_dat %>% filter(dpisofirme == 0)
-
-treat_cont_i <- individual_dat$dpisofirme
-treat_cont_hh <- household_dat$dpisofirme
 ```
 
 # Model 1: no controls
 
 ```{r model-1}
 model_1_i <- function(dependent) {
-  return(coef(lm(dependent ~ treat_cont_i, individual_dat %>% select(-dpisofirme))))
+  dummy_i <- individual_dat$dpisofirme[!is.na(dependent)]
+  dependent_updated <- dependent[!is.na(dependent)]
+  return(coef(lm(dependent_updated ~ dummy_i)))
 }
+
 
 model_1_hh <- function(dependent) {
-  return(coef(lm(dependent ~ treat_cont_hh, household_dat %>% select(-dpisofirme))))
+  dummy_hh <- household_dat$dpisofirme[!is.na(dependent)]
+  dependent_updated <- dependent[!is.na(dependent)]
+  return(coef(lm(dependent_updated ~ dummy_hh )))
 }
-
 model_1_coeff <- c(model_1_hh(household_dat$S_shcementfloor)[2],model_1_hh(household_dat$S_cementfloorkit)[2],model_1_hh(household_dat$S_cementfloordin)[2],model_1_hh(household_dat$S_cementfloorbat)[2],model_1_hh(household_dat$S_cementfloorbed)[2],model_1_i(individual_dat$S_parcount)[2],model_1_i(individual_dat$S_diarrhea)[2],model_1_i(individual_dat$S_anemia)[2],model_1_i(individual_dat$S_mccdts)[2],model_1_i(individual_dat$S_pbdypct)[2],model_1_i(individual_dat$S_haz)[2],model_1_i(individual_dat$S_whz)[2],model_1_hh(household_dat$S_satisfloor)[2],model_1_hh(household_dat$S_satishouse)[2],model_1_hh(household_dat$S_satislife)[2],model_1_hh(household_dat$S_cesds)[2],model_1_hh(household_dat$S_pss)[2])
-
 model_1_intercept <- c(model_1_hh(household_dat$S_shcementfloor)[1],model_1_hh(household_dat$S_cementfloorkit)[1],model_1_hh(household_dat$S_cementfloordin)[1],model_1_hh(household_dat$S_cementfloorbat)[1],model_1_hh(household_dat$S_cementfloorbed)[1],model_1_i(individual_dat$S_parcount)[1],model_1_i(individual_dat$S_diarrhea)[1],model_1_i(individual_dat$S_anemia)[1],model_1_i(individual_dat$S_mccdts)[1],model_1_i(individual_dat$S_pbdypct)[1],model_1_i(individual_dat$S_haz)[1],model_1_i(individual_dat$S_whz)[1],model_1_hh(household_dat$S_satisfloor)[1],model_1_hh(household_dat$S_satishouse)[1],model_1_hh(household_dat$S_satislife)[1],model_1_hh(household_dat$S_cesds)[1],model_1_hh(household_dat$S_pss)[1])
+
+
 
 variables <- c("share_cement_floors", "kitchen", "dining_room", "bathroom", "bedroom", "parasite","diarrhea","anemia","MacArther","Peabody","height","weight","Sat_floor","Sat_House","Sat_life","Depression","Stress")
 
@@ -78,17 +76,104 @@ Model_1 <- data.frame(var = variables,coeff_1 = model_1_coeff,int_1 = model_1_in
 # Model 2: age, demographic, and health-habit controls
 
 ```{r model-2}
+# control variables, set na to 0
+individual_dat$S_HHpeople[is.na(individual_dat$S_HHpeople)]<- 0
+individual_dat$S_rooms[is.na(individual_dat$S_rooms)]<- 0
+individual_dat$S_age[is.na(individual_dat$S_age)]<- 0
+individual_dat$S_gender[is.na(individual_dat$S_gender)]<- 0
+individual_dat$S_childma[is.na(individual_dat$S_childma)]<- 0
+individual_dat$S_childmaage[is.na(individual_dat$S_childmaage)]<- 0
+individual_dat$S_childmaeduc[is.na(individual_dat$S_childmaeduc)]<- 0
+individual_dat$S_childpa[is.na(individual_dat$S_childpa)]<- 0
+individual_dat$S_childpaage[is.na(individual_dat$S_childpaage)]<- 0
+individual_dat$S_childpaeduc[is.na(individual_dat$S_childpaeduc)]<- 0
+individual_dat$S_waterland[is.na(individual_dat$S_waterland)]<- 0
+individual_dat$S_waterhouse[is.na(individual_dat$S_waterhouse)]<- 0
+individual_dat$S_electricity[is.na(individual_dat$S_electricity)]<- 0
+individual_dat$S_hasanimals[is.na(individual_dat$S_hasanimals)]<- 0
+individual_dat$S_animalsinside[is.na(individual_dat$S_animalsinside)]<- 0
+individual_dat$S_garbage[is.na(individual_dat$S_garbage)]<- 0
+individual_dat$S_washhands[is.na(individual_dat$S_washhands)]<- 0
+
 model_2_i <- function(dependent) {
-  return(coef(lm(dependent ~ treat_cont_i + individual_dat$S_HHpeople + individual_dat$S_rooms + individual_dat$S_age + individual_dat$S_gender + individual_dat$S_childma + individual_dat$S_childmaage + individual_dat$S_childmaeduc + individual_dat$S_childpa + individual_dat$S_childpaage + individual_dat$S_childpaeduc + individual_dat$S_waterland + individual_dat$S_waterhouse + individual_dat$S_electricity + individual_dat$S_hasanimals + individual_dat$S_animalsinside + individual_dat$S_garbage + individual_dat$S_washhands, individual_dat %>% select(-dpisofirme))))
+  x1<- individual_dat$S_HHpeople[!is.na(dependent)]
+  x2<-individual_dat$S_rooms[!is.na(dependent)]
+  x3<-individual_dat$S_age[!is.na(dependent)]
+  x4<-individual_dat$S_gender[!is.na(dependent)]
+  x5<-individual_dat$S_childma[!is.na(dependent)]
+  x6<-individual_dat$S_childmaage[!is.na(dependent)]
+  x7<-individual_dat$S_childmaeduc[!is.na(dependent)] 
+  x8<-individual_dat$S_childpa[!is.na(dependent)]
+  x9<-individual_dat$S_childpaage[!is.na(dependent)] 
+  x10<-individual_dat$S_childpaeduc[!is.na(dependent)]
+  x11<-individual_dat$S_waterland[!is.na(dependent)]
+  x12<-individual_dat$S_waterhouse[!is.na(dependent)] 
+  x13<-individual_dat$S_electricity[!is.na(dependent)]
+  x14<-individual_dat$S_hasanimals[!is.na(dependent)]
+  x15<-individual_dat$S_animalsinside[!is.na(dependent)]
+  x16<-individual_dat$S_garbage[!is.na(dependent)]
+  x17<-individual_dat$S_washhands[!is.na(dependent)]
+  x18<- individual_dat$dpisofirme[!is.na(dependent)]
+  updated_dependent<- dependent[!is.na(dependent)]
+  
+  
+  return(coef(lm( updated_dependent ~ x18 + x1 + x2 + x3  + x4+ x5+ x6+ x7+ x8+ x9+ x10+ x11+ x12+ x13+ x14+ x15+ x16+ x17 )))
 }
+
+
+# control variables, set na to 0
+household_dat$S_HHpeople[is.na(household_dat$S_HHpeople)]<-0
+household_dat$S_headage[is.na(household_dat$S_headage)]<-0
+household_dat$S_spouseage[is.na(household_dat$S_spouseage)]<-0
+household_dat$S_headeduc[is.na(household_dat$S_headeduc)]<-0
+household_dat$S_spouseeduc[is.na(household_dat$S_spouseeduc)]<-0
+household_dat$S_dem1[is.na(household_dat$S_dem1)]<-0
+household_dat$S_dem2[is.na(household_dat$S_dem2)] <-0
+household_dat$S_dem3[is.na(household_dat$S_dem3)]<-0
+household_dat$S_dem4[is.na(household_dat$S_dem4)] <-0
+household_dat$S_dem5[is.na(household_dat$S_dem5)]<-0
+household_dat$S_dem6[is.na(household_dat$S_dem6)]<-0
+household_dat$S_dem7[is.na(household_dat$S_dem7)] <-0
+household_dat$S_dem8[is.na(household_dat$S_dem8)]<-0
+household_dat$S_waterland[is.na(household_dat$S_waterland)]<-0
+household_dat$S_waterhouse[is.na(household_dat$S_waterhouse)]<-0
+household_dat$S_electricity[is.na(household_dat$S_electricity)]<-0
+household_dat$S_hasanimals[is.na(household_dat$S_hasanimals)]<-0
+household_dat$S_animalsinside[is.na(household_dat$S_animalsinside)]<-0
+household_dat$S_garbage[is.na(household_dat$S_garbage)]<-0
+household_dat$S_washhands[is.na(household_dat$S_washhands)]<-0
+
+
 
 model_2_hh <- function(dependent) {
-  return(coef(lm(dependent ~ treat_cont_hh + household_dat$S_HHpeople + household_dat$S_headage + household_dat$S_spouseage + household_dat$S_headeduc + household_dat$S_spouseeduc + household_dat$S_dem1 + household_dat$S_dem2 + household_dat$S_dem3 + household_dat$S_dem4 + household_dat$S_dem5 + household_dat$S_dem6 + household_dat$S_dem7 + household_dat$S_dem8 + household_dat$S_waterland + household_dat$S_waterhouse + household_dat$S_electricity + household_dat$S_hasanimals + household_dat$S_animalsinside + household_dat$S_garbage + household_dat$S_washhands, household_dat %>% select(-dpisofirme))))
+  x1<- household_dat$S_HHpeople[!is.na(dependent)]
+  x2<-household_dat$S_headage[!is.na(dependent)]
+  x3<-household_dat$S_spouseage[!is.na(dependent)]
+  x4<-household_dat$S_headeduc[!is.na(dependent)]
+  x5<-household_dat$S_spouseeduc[!is.na(dependent)]
+  x6<-household_dat$S_dem1[!is.na(dependent)]
+  x7<-household_dat$S_dem2[!is.na(dependent)] 
+  x8<-household_dat$S_dem3[!is.na(dependent)]
+  x9<-household_dat$S_dem4[!is.na(dependent)] 
+  x10<-household_dat$S_dem5[!is.na(dependent)]
+  x11<-household_dat$S_dem6[!is.na(dependent)]
+  x12<-household_dat$S_dem7[!is.na(dependent)] 
+  x13<-household_dat$S_dem8[!is.na(dependent)]
+  x14<-household_dat$S_waterland[!is.na(dependent)]
+  x15<-household_dat$S_waterhouse[!is.na(dependent)]
+  x16<-household_dat$S_electricity[!is.na(dependent)]
+  x17<-household_dat$S_hasanimals[!is.na(dependent)]
+  x18<-household_dat$S_animalsinside[!is.na(dependent)]
+  x19<-household_dat$S_garbage[!is.na(dependent)]
+  x20<-household_dat$S_washhands[!is.na(dependent)]
+  x21<- household_dat$dpisofirme[!is.na(dependent)]
+  updated_dependent<- dependent[!is.na(dependent)]
+  
+  return(coef(lm(updated_dependent ~ x21 + x1 + x2 + x3  + x4+ x5+ x6+ x7+ x8+ x9+ x10+ x11+ x12+ x13+ x14+ x15+ x16+ x17+ x18 + x19+ x20)))
 }
-
+  
 model_2_coeff <- c(model_2_hh(household_dat$S_shcementfloor)[2],model_2_hh(household_dat$S_cementfloorkit)[2],model_2_hh(household_dat$S_cementfloordin)[2],model_2_hh(household_dat$S_cementfloorbat)[2],model_2_hh(household_dat$S_cementfloorbed)[2],model_2_i(individual_dat$S_parcount)[2],model_2_i(individual_dat$S_diarrhea)[2],model_2_i(individual_dat$S_anemia)[2],model_2_i(individual_dat$S_mccdts)[2],model_2_i(individual_dat$S_pbdypct)[2],model_2_i(individual_dat$S_haz)[2],model_2_i(individual_dat$S_whz)[2],model_2_hh(household_dat$S_satisfloor)[2],model_2_hh(household_dat$S_satishouse)[2],model_2_hh(household_dat$S_satislife)[2],model_2_hh(household_dat$S_cesds)[2],model_2_hh(household_dat$S_pss)[2])
 
-model_2_intercept <- c(model_2_hh(household_dat$S_shcementfloor)[1],model_2_hh(household_dat$S_cementfloorkit)[1],model_2_hh(household_dat$S_cementfloordin)[1],model_2_hh(household_dat$S_cementfloorbat)[1],model_2_hh(household_dat$S_cementfloorbed)[1],model_2_i(individual_dat$S_parcount)[1],model_2_i(individual_dat$S_diarrhea)[1],model_2_i(individual_dat$S_anemia)[1],model_2_i(individual_dat$S_mccdts)[1],model_2_i(individual_dat$S_pbdypct)[1],model_2_i(individual_dat$S_haz)[1],model_2_i(individual_dat$S_whz)[1],model_2_hh(household_dat$S_satisfloor)[1],model_2_hh(household_dat$S_satishouse)[1],model_2_hh(household_dat$S_satislife)[1],model_2_hh(household_dat$S_cesds)[1],model_2_hh(household_dat$S_pss)[1])
 
 Model_2 <- data.frame(var = variables,coeff_2 = model_2_coeff,int_2 = model_2_intercept)
 ```
@@ -96,17 +181,92 @@ Model_2 <- data.frame(var = variables,coeff_2 = model_2_coeff,int_2 = model_2_in
 # Model 3: age, demographic, health-habit and public social programs controls
 
 ```{r model-3}
+# additional control variables, set na to 0
+individual_dat$S_cashtransfers[is.na(individual_dat$S_cashtransfers)]<- 0
+individual_dat$S_milkprogram[is.na(individual_dat$S_milkprogram)]<- 0
+individual_dat$S_foodprogram[is.na(individual_dat$S_foodprogram)]<- 0
+individual_dat$S_seguropopular[is.na(individual_dat$S_seguropopular)]<- 0
+
+
 model_3_i <- function(dependent) {
-  return(coef(lm(dependent ~ treat_cont_i + individual_dat$S_HHpeople + individual_dat$S_rooms + individual_dat$S_age + individual_dat$S_gender + individual_dat$S_childma + individual_dat$S_childmaage + individual_dat$S_childmaeduc + individual_dat$S_childpa + individual_dat$S_childpaage + individual_dat$S_childpaeduc + individual_dat$S_waterland + individual_dat$S_waterhouse + individual_dat$S_electricity + individual_dat$S_hasanimals + individual_dat$S_animalsinside + individual_dat$S_garbage + individual_dat$S_washhands + individual_dat$S_cashtransfers + individual_dat$S_milkprogram + individual_dat$S_foodprogram + individual_dat$S_seguropopular, individual_dat %>% select(-dpisofirme))))
+  x1<- individual_dat$S_HHpeople[!is.na(dependent)]
+  x2<-individual_dat$S_rooms[!is.na(dependent)]
+  x3<-individual_dat$S_age[!is.na(dependent)]
+  x4<-individual_dat$S_gender[!is.na(dependent)]
+  x5<-individual_dat$S_childma[!is.na(dependent)]
+  x6<-individual_dat$S_childmaage[!is.na(dependent)]
+  x7<-individual_dat$S_childmaeduc[!is.na(dependent)] 
+  x8<-individual_dat$S_childpa[!is.na(dependent)]
+  x9<-individual_dat$S_childpaage[!is.na(dependent)] 
+  x10<-individual_dat$S_childpaeduc[!is.na(dependent)]
+  x11<-individual_dat$S_waterland[!is.na(dependent)]
+  x12<-individual_dat$S_waterhouse[!is.na(dependent)] 
+  x13<-individual_dat$S_electricity[!is.na(dependent)]
+  x14<-individual_dat$S_hasanimals[!is.na(dependent)]
+  x15<-individual_dat$S_animalsinside[!is.na(dependent)]
+  x16<-individual_dat$S_garbage[!is.na(dependent)]
+  x17<-individual_dat$S_washhands[!is.na(dependent)]
+  x18<-individual_dat$S_cashtransfers[!is.na(dependent)]
+  x19<-individual_dat$S_milkprogram[!is.na(dependent)]
+  x20<-individual_dat$S_foodprogram[!is.na(dependent)]
+  x21<-individual_dat$S_seguropopular[!is.na(dependent)]
+  x22<- individual_dat$dpisofirme[!is.na(dependent)]
+  updated_dependent<- dependent[!is.na(dependent)]
+  
+  
+  
+  
+  
+  return(coef(lm( updated_dependent ~ x22 + x1 + x2 + x3  + x4+ x5+ x6+ x7+ x8+ x9+ x10+ x11+ x12+ x13+ x14+ x15+ x16+ x17+ x18+x19 +x20+x22 )))
 }
 
+household_dat$S_cashtransfers[is.na(household_dat$S_cashtransfers)]<- 0
+household_dat$S_milkprogram[is.na(household_dat$S_milkprogram)]<- 0
+household_dat$S_foodprogram[is.na(household_dat$S_foodprogram)]<- 0
+household_dat$S_seguropopular[is.na(household_dat$S_seguropopular)]<- 0
+
+
+# additional control variables, set na to 0
 model_3_hh <- function(dependent) {
-  return(coef(lm(dependent ~ treat_cont_hh + household_dat$S_HHpeople + household_dat$S_headage + household_dat$S_spouseage + household_dat$S_headeduc + household_dat$S_spouseeduc + household_dat$S_dem1 + household_dat$S_dem2 + household_dat$S_dem3 + household_dat$S_dem4 + household_dat$S_dem5 + household_dat$S_dem6 + household_dat$S_dem7 + household_dat$S_dem8 + household_dat$S_waterland + household_dat$S_waterhouse + household_dat$S_electricity + household_dat$S_hasanimals + household_dat$S_animalsinside + household_dat$S_garbage + household_dat$S_washhands + household_dat$S_cashtransfers + household_dat$S_milkprogram + household_dat$S_foodprogram + household_dat$S_seguropopular, household_dat %>% select(-dpisofirme))))
+  x1<- household_dat$S_HHpeople[!is.na(dependent)]
+  x2<-household_dat$S_headage[!is.na(dependent)]
+  x3<-household_dat$S_spouseage[!is.na(dependent)]
+  x4<-household_dat$S_headeduc[!is.na(dependent)]
+  x5<-household_dat$S_spouseeduc[!is.na(dependent)]
+  x6<-household_dat$S_dem1[!is.na(dependent)]
+  x7<-household_dat$S_dem2[!is.na(dependent)] 
+  x8<-household_dat$S_dem3[!is.na(dependent)]
+  x9<-household_dat$S_dem4[!is.na(dependent)] 
+  x10<-household_dat$S_dem5[!is.na(dependent)]
+  x11<-household_dat$S_dem6[!is.na(dependent)]
+  x12<-household_dat$S_dem7[!is.na(dependent)] 
+  x13<-household_dat$S_dem8[!is.na(dependent)]
+  x14<-household_dat$S_waterland[!is.na(dependent)]
+  x15<-household_dat$S_waterhouse[!is.na(dependent)]
+  x16<-household_dat$S_electricity[!is.na(dependent)]
+  x17<-household_dat$S_hasanimals[!is.na(dependent)]
+  x18<-household_dat$S_animalsinside[!is.na(dependent)]
+  x19<-household_dat$S_garbage[!is.na(dependent)]
+  x20<-household_dat$S_washhands[!is.na(dependent)]
+  x21<- household_dat$dpisofirme[!is.na(dependent)]
+
+  x22<-household_dat$S_cashtransfers[!is.na(dependent)]
+  x23<-household_dat$S_milkprogram[!is.na(dependent)]
+  x24<-household_dat$S_foodprogram[!is.na(dependent)]
+  x25<-household_dat$S_seguropopular[!is.na(dependent)]
+  
+  updated_dependent<- dependent[!is.na(dependent)]
+  
+  
+  
+   return(coef(lm(updated_dependent ~ x21 + x1 + x2 + x3  + x4+ x5+ x6+ x7+ x8+ x9+ x10+ x11+ x12+ x13+ x14+ x15+ x16+ x17+ x18 + x19+ x20 + x22 + x23 + x24+ x25 )))
+  
 }
 
 model_3_coeff <- c(model_3_hh(household_dat$S_shcementfloor)[2],model_3_hh(household_dat$S_cementfloorkit)[2],model_3_hh(household_dat$S_cementfloordin)[2],model_3_hh(household_dat$S_cementfloorbat)[2],model_3_hh(household_dat$S_cementfloorbed)[2],model_3_i(individual_dat$S_parcount)[2],model_3_i(individual_dat$S_diarrhea)[2],model_3_i(individual_dat$S_anemia)[2],model_3_i(individual_dat$S_mccdts)[2],model_3_i(individual_dat$S_pbdypct)[2],model_3_i(individual_dat$S_haz)[2],model_3_i(individual_dat$S_whz)[2],model_3_hh(household_dat$S_satisfloor)[2],model_3_hh(household_dat$S_satishouse)[2],model_3_hh(household_dat$S_satislife)[2],model_3_hh(household_dat$S_cesds)[2],model_3_hh(household_dat$S_pss)[2])
 
 model_3_intercept <- c(model_3_hh(household_dat$S_shcementfloor)[1],model_3_hh(household_dat$S_cementfloorkit)[1],model_3_hh(household_dat$S_cementfloordin)[1],model_3_hh(household_dat$S_cementfloorbat)[1],model_3_hh(household_dat$S_cementfloorbed)[1],model_3_i(individual_dat$S_parcount)[1],model_3_i(individual_dat$S_diarrhea)[1],model_3_i(individual_dat$S_anemia)[1],model_3_i(individual_dat$S_mccdts)[1],model_3_i(individual_dat$S_pbdypct)[1],model_3_i(individual_dat$S_haz)[1],model_3_i(individual_dat$S_whz)[1],model_3_hh(household_dat$S_satisfloor)[1],model_3_hh(household_dat$S_satishouse)[1],model_3_hh(household_dat$S_satislife)[1],model_3_hh(household_dat$S_cesds)[1],model_3_hh(household_dat$S_pss)[1])
+
 
 Model_3 <- data.frame(var = variables,coeff_3 = model_3_coeff,int_3 = model_3_intercept)
 ```
@@ -115,16 +275,19 @@ Model_3 <- data.frame(var = variables,coeff_3 = model_3_coeff,int_3 = model_3_in
 
 ```{r control-mean-sd}
 control_mean <- function(dependent) {
-  return(mean(dependent))
+  updated_dependent<- dependent[!is.na(dependent)]
+  return(mean(updated_dependent))
 }
 
 control_sd <- function(dependent) {
-  return(sd(dependent))
+  updated_dependent<- dependent[!is.na(dependent)]
+  return(sd(updated_dependent))
 }
 
 control_mean <- c(control_mean(household_control$S_shcementfloor), control_mean(household_control$S_cementfloorkit), control_mean(household_control$S_cementfloordin), control_mean(household_control$S_cementfloorbat),control_mean(household_control$S_cementfloorbed),control_mean(individual_control$S_parcount),control_mean(individual_control$S_diarrhea),control_mean(individual_control$S_anemia),control_mean(individual_control$S_mccdts),control_mean(individual_control$S_pbdypct),control_mean(individual_control$S_haz),control_mean(individual_control$S_whz),control_mean(household_control$S_satisfloor),control_mean(household_control$S_satishouse),control_mean(household_control$S_satislife),control_mean(household_control$S_cesds),control_mean(household_control$S_pss))
 
 control_sd <- c(control_sd(household_control$S_shcementfloor), control_sd(household_control$S_cementfloorkit), control_sd(household_control$S_cementfloordin),control_sd(household_control$S_cementfloorbat),control_sd(household_control$S_cementfloorbed),control_sd(individual_control$S_parcount),control_sd(individual_control$S_diarrhea),control_sd(individual_control$S_anemia),control_sd(individual_control$S_mccdts),control_sd(individual_control$S_pbdypct),control_sd(individual_control$S_haz),control_sd(individual_control$S_whz),control_sd(household_control$S_satisfloor),control_sd(household_control$S_satishouse),control_sd(household_control$S_satislife),control_sd(household_control$S_cesds),control_sd(household_control$S_pss))
+
 
 Mean_SD <- data.frame(var = variables, control_group_mean = control_mean, control_group_sd = control_sd)
 ```
