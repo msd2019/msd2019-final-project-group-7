@@ -54,7 +54,6 @@ model_1_i <- function(dependent,cluster=T) {
     return(tidy(lm_robust(dependent_updated ~ dpisofirme,data_updated)))
   }
 }
-
 # function for household data set
  model_1_hh <- function(dependent,cluster=T) {
   data_updated<-household_dat[!is.na(dependent),]
@@ -71,15 +70,11 @@ model_1_i <- function(dependent,cluster=T) {
  
 # caluclates coefficients for each dependent variable
 model_1_coeff <- c(model_1_hh(household_dat$S_shcementfloor)$estimate[2],model_1_hh(household_dat$S_cementfloorkit)$estimate[2],model_1_hh(household_dat$S_cementfloordin)$estimate[2],model_1_hh(household_dat$S_cementfloorbat)$estimate[2],model_1_hh(household_dat$S_cementfloorbed)$estimate[2],model_1_i(individual_dat$S_parcount)$estimate[2],model_1_i(individual_dat$S_diarrhea)$estimate[2],model_1_i(individual_dat$S_anemia)$estimate[2],model_1_i(individual_dat$S_mccdts)$estimate[2],model_1_i(individual_dat$S_pbdypct)$estimate[2],model_1_i(individual_dat$S_haz)$estimate[2],model_1_i(individual_dat$S_whz)$estimate[2],model_1_hh(household_dat$S_satisfloor)$estimate[2],model_1_hh(household_dat$S_satishouse)$estimate[2],model_1_hh(household_dat$S_satislife)$estimate[2],model_1_hh(household_dat$S_cesds)$estimate[2],model_1_hh(household_dat$S_pss)$estimate[2])
-
 # calculates clustered standard errors for each dependent variable
 model_1_std_error_clustered<- c(model_1_hh(household_dat$S_shcementfloor)$std.error[2],model_1_hh(household_dat$S_cementfloorkit)$std.error[2],model_1_hh(household_dat$S_cementfloordin)$std.error[2],model_1_hh(household_dat$S_cementfloorbat)$std.error[2],model_1_hh(household_dat$S_cementfloorbed)$std.error[2],model_1_i(individual_dat$S_parcount)$std.error[2],model_1_i(individual_dat$S_diarrhea)$std.error[2],model_1_i(individual_dat$S_anemia)$std.error[2],model_1_i(individual_dat$S_mccdts)$std.error[2],model_1_i(individual_dat$S_pbdypct)$std.error[2],model_1_i(individual_dat$S_haz)$std.error[2],model_1_i(individual_dat$S_whz)$std.error[2],model_1_hh(household_dat$S_satisfloor)$std.error[2],model_1_hh(household_dat$S_satishouse)$std.error[2],model_1_hh(household_dat$S_satislife)$std.error[2],model_1_hh(household_dat$S_cesds)$std.error[2],model_1_hh(household_dat$S_pss)$std.error[2])
-
 # calculates non-clusted standard errors for each dependent variable
 model_1_std_error<- c(model_1_hh(household_dat$S_shcementfloor,cluster=F)$std.error[2],model_1_hh(household_dat$S_cementfloorkit,cluster=F)$std.error[2],model_1_hh(household_dat$S_cementfloordin,cluster=F)$std.error[2],model_1_hh(household_dat$S_cementfloorbat,cluster=F)$std.error[2],model_1_hh(household_dat$S_cementfloorbed,cluster=F)$std.error[2],model_1_i(individual_dat$S_parcount,cluster=F)$std.error[2],model_1_i(individual_dat$S_diarrhea,cluster=F)$std.error[2],model_1_i(individual_dat$S_anemia,cluster=F)$std.error[2],model_1_i(individual_dat$S_mccdts,cluster=F)$std.error[2],model_1_i(individual_dat$S_pbdypct,cluster=F)$std.error[2],model_1_i(individual_dat$S_haz,cluster=F)$std.error[2],model_1_i(individual_dat$S_whz,cluster=F)$std.error[2],model_1_hh(household_dat$S_satisfloor,cluster=F)$std.error[2],model_1_hh(household_dat$S_satishouse,cluster=F)$std.error[2],model_1_hh(household_dat$S_satislife,cluster=F)$std.error[2],model_1_hh(household_dat$S_cesds,cluster=F)$std.error[2],model_1_hh(household_dat$S_pss,cluster=F)$std.error[2])
-
 variables <- c("share_cement_floors", "kitchen", "dining_room", "bathroom", "bedroom", "parasite","diarrhea","anemia","MacArther","Peabody","height","weight","Sat_floor","Sat_House","Sat_life","Depression","Stress")
-
 Model_1 <- data.frame(var = variables,coeff_1 = model_1_coeff,sce = model_1_std_error_clustered,sc=model_1_std_error)
 ```
 
@@ -104,7 +99,6 @@ individual_dat$S_hasanimals[is.na(individual_dat$S_hasanimals)]<- 0
 individual_dat$S_animalsinside[is.na(individual_dat$S_animalsinside)]<- 0
 individual_dat$S_garbage[is.na(individual_dat$S_garbage)]<- 0
 individual_dat$S_washhands[is.na(individual_dat$S_washhands)]<- 0
-
 # function for individual data set
 model_2_i <- function(dependent,cluster=T) {
   # removes entries with na values
@@ -136,7 +130,6 @@ model_2_i <- function(dependent,cluster=T) {
     return(tidy(lm_robust(updated_dependent ~ x18 + x1 + x2 + x3  + x4+ x5+ x6+ x7+ x8+ x9+ x10+ x11+ x12+ x13+ x14+ x15+ x16+ x17,data_updated)))
   }
 }
-
 # control variables, set na to 0
 household_dat$S_HHpeople[is.na(household_dat$S_HHpeople)]<-0
 household_dat$S_headage[is.na(household_dat$S_headage)]<-0
@@ -158,7 +151,6 @@ household_dat$S_hasanimals[is.na(household_dat$S_hasanimals)]<-0
 household_dat$S_animalsinside[is.na(household_dat$S_animalsinside)]<-0
 household_dat$S_garbage[is.na(household_dat$S_garbage)]<-0
 household_dat$S_washhands[is.na(household_dat$S_washhands)]<-0
-
 # function for household data set
 model_2_hh <- function(dependent,cluster=T) {
   # removes entries with na values
@@ -193,16 +185,12 @@ model_2_hh <- function(dependent,cluster=T) {
     return(tidy(lm_robust(updated_dependent ~ x21 + x1 + x2 + x3  + x4+ x5+ x6+ x7+ x8+ x9+ x10+ x11+ x12+ x13+ x14+ x15+ x16+ x17+x18+x19+x20,data_updated,clusters=idcluster)))
   }
 }
-
 # caluclates coefficients for each dependent variable
 model_2_coeff <- c(model_2_hh(household_dat$S_shcementfloor)$estimate[2],model_2_hh(household_dat$S_cementfloorkit)$estimate[2],model_2_hh(household_dat$S_cementfloordin)$estimate[2],model_2_hh(household_dat$S_cementfloorbat)$estimate[2],model_2_hh(household_dat$S_cementfloorbed)$estimate[2],model_2_i(individual_dat$S_parcount)$estimate[2],model_2_i(individual_dat$S_diarrhea)$estimate[2],model_2_i(individual_dat$S_anemia)$estimate[2],model_2_i(individual_dat$S_mccdts)$estimate[2],model_2_i(individual_dat$S_pbdypct)$estimate[2],model_2_i(individual_dat$S_haz)$estimate[2],model_2_i(individual_dat$S_whz)$estimate[2],model_2_hh(household_dat$S_satisfloor)$estimate[2],model_2_hh(household_dat$S_satishouse)$estimate[2],model_2_hh(household_dat$S_satislife)$estimate[2],model_2_hh(household_dat$S_cesds)$estimate[2],model_2_hh(household_dat$S_pss)$estimate[2])
-
 # caluclates clustered standard errors for each dependent variable
 model_2_std_error_clustered<- c(model_2_hh(household_dat$S_shcementfloor)$std.error[2],model_2_hh(household_dat$S_cementfloorkit)$std.error[2],model_2_hh(household_dat$S_cementfloordin)$std.error[2],model_2_hh(household_dat$S_cementfloorbat)$std.error[2],model_2_hh(household_dat$S_cementfloorbed)$std.error[2],model_2_i(individual_dat$S_parcount)$std.error[2],model_2_i(individual_dat$S_diarrhea)$std.error[2],model_2_i(individual_dat$S_anemia)$std.error[2],model_2_i(individual_dat$S_mccdts)$std.error[2],model_2_i(individual_dat$S_pbdypct)$std.error[2],model_2_i(individual_dat$S_haz)$std.error[2],model_2_i(individual_dat$S_whz)$std.error[2],model_2_hh(household_dat$S_satisfloor)$std.error[2],model_2_hh(household_dat$S_satishouse)$std.error[2],model_2_hh(household_dat$S_satislife)$std.error[2],model_2_hh(household_dat$S_cesds)$std.error[2],model_2_hh(household_dat$S_pss)$std.error[2])
-
 # caluclates non-clustered standard errors for each dependent variable
 model_2_std_error<- c(model_2_hh(household_dat$S_shcementfloor,cluster=F)$std.error[2],model_2_hh(household_dat$S_cementfloorkit,cluster=F)$std.error[2],model_2_hh(household_dat$S_cementfloordin,cluster=F)$std.error[2],model_2_hh(household_dat$S_cementfloorbat,cluster=F)$std.error[2],model_2_hh(household_dat$S_cementfloorbed,cluster=F)$std.error[2],model_2_i(individual_dat$S_parcount,cluster=F)$std.error[2],model_2_i(individual_dat$S_diarrhea,cluster=F)$std.error[2],model_2_i(individual_dat$S_anemia,cluster=F)$std.error[2],model_2_i(individual_dat$S_mccdts,cluster=F)$std.error[2],model_2_i(individual_dat$S_pbdypct,cluster=F)$std.error[2],model_2_i(individual_dat$S_haz,cluster=F)$std.error[2],model_2_i(individual_dat$S_whz,cluster=F)$std.error[2],model_2_hh(household_dat$S_satisfloor,cluster=F)$std.error[2],model_2_hh(household_dat$S_satishouse,cluster=F)$std.error[2],model_2_hh(household_dat$S_satislife,cluster=F)$std.error[2],model_2_hh(household_dat$S_cesds,cluster=F)$std.error[2],model_2_hh(household_dat$S_pss,cluster=F)$std.error[2])
-
 Model_2 <- data.frame(var = variables,coeff_2 = model_2_coeff,sce = model_2_std_error_clustered,sc=model_2_std_error)
 ```
 
@@ -214,7 +202,6 @@ individual_dat$S_cashtransfers[is.na(individual_dat$S_cashtransfers)]<- 0
 individual_dat$S_milkprogram[is.na(individual_dat$S_milkprogram)]<- 0
 individual_dat$S_foodprogram[is.na(individual_dat$S_foodprogram)]<- 0
 individual_dat$S_seguropopular[is.na(individual_dat$S_seguropopular)]<- 0
-
 # function for individual data set
 model_3_i <- function(dependent,cluster=T) {
   # removes entries with na values
@@ -256,7 +243,6 @@ household_dat$S_cashtransfers[is.na(household_dat$S_cashtransfers)]<- 0
 household_dat$S_milkprogram[is.na(household_dat$S_milkprogram)]<- 0
 household_dat$S_foodprogram[is.na(household_dat$S_foodprogram)]<- 0
 household_dat$S_seguropopular[is.na(household_dat$S_seguropopular)]<- 0
-
 # function for household data set
 model_3_hh <- function(dependent,cluster=T) {
   data_updated <- household_dat%>%filter(!is.na(dependent) & !is.na(household_dat$idcluster))
@@ -296,13 +282,10 @@ model_3_hh <- function(dependent,cluster=T) {
   
 # caluclates coefficients for each dependent variable
 model_3_coeff <- c(model_3_hh(household_dat$S_shcementfloor)$estimate[2],model_3_hh(household_dat$S_cementfloorkit)$estimate[2],model_3_hh(household_dat$S_cementfloordin)$estimate[2],model_3_hh(household_dat$S_cementfloorbat)$estimate[2],model_3_hh(household_dat$S_cementfloorbed)$estimate[2],model_3_i(individual_dat$S_parcount)$estimate[2],model_3_i(individual_dat$S_diarrhea)$estimate[2],model_3_i(individual_dat$S_anemia)$estimate[2],model_3_i(individual_dat$S_mccdts)$estimate[2],model_3_i(individual_dat$S_pbdypct)$estimate[2],model_3_i(individual_dat$S_haz)$estimate[2],model_3_i(individual_dat$S_whz)$estimate[2],model_3_hh(household_dat$S_satisfloor)$estimate[2],model_3_hh(household_dat$S_satishouse)$estimate[2],model_3_hh(household_dat$S_satislife)$estimate[2],model_3_hh(household_dat$S_cesds)$estimate[2],model_3_hh(household_dat$S_pss)$estimate[2])
-
 # caluclates clustered standard errors for each dependent variable
 model_3_std_error_clustered<- c(model_3_hh(household_dat$S_shcementfloor)$std.error[2],model_3_hh(household_dat$S_cementfloorkit)$std.error[2],model_3_hh(household_dat$S_cementfloordin)$std.error[2],model_3_hh(household_dat$S_cementfloorbat)$std.error[2],model_3_hh(household_dat$S_cementfloorbed)$std.error[2],model_3_i(individual_dat$S_parcount)$std.error[2],model_3_i(individual_dat$S_diarrhea)$std.error[2],model_3_i(individual_dat$S_anemia)$std.error[2],model_3_i(individual_dat$S_mccdts)$std.error[2],model_3_i(individual_dat$S_pbdypct)$std.error[2],model_3_i(individual_dat$S_haz)$std.error[2],model_3_i(individual_dat$S_whz)$std.error[2],model_3_hh(household_dat$S_satisfloor)$std.error[2],model_3_hh(household_dat$S_satishouse)$std.error[2],model_3_hh(household_dat$S_satislife)$std.error[2],model_3_hh(household_dat$S_cesds)$std.error[2],model_3_hh(household_dat$S_pss)$std.error[2])
-
 # caluclates non-clustered standard errors for each dependent variable
 model_3_std_error<- c(model_3_hh(household_dat$S_shcementfloor,cluster=F)$std.error[2],model_3_hh(household_dat$S_cementfloorkit,cluster=F)$std.error[2],model_3_hh(household_dat$S_cementfloordin,cluster=F)$std.error[2],model_3_hh(household_dat$S_cementfloorbat,cluster=F)$std.error[2],model_3_hh(household_dat$S_cementfloorbed,cluster=F)$std.error[2],model_3_i(individual_dat$S_parcount,cluster=F)$std.error[2],model_3_i(individual_dat$S_diarrhea,cluster=F)$std.error[2],model_3_i(individual_dat$S_anemia,cluster=F)$std.error[2],model_3_i(individual_dat$S_mccdts,cluster=F)$std.error[2],model_3_i(individual_dat$S_pbdypct,cluster=F)$std.error[2],model_3_i(individual_dat$S_haz,cluster=F)$std.error[2],model_3_i(individual_dat$S_whz,cluster=F)$std.error[2],model_3_hh(household_dat$S_satisfloor,cluster=F)$std.error[2],model_3_hh(household_dat$S_satishouse,cluster=F)$std.error[2],model_3_hh(household_dat$S_satislife,cluster=F)$std.error[2],model_3_hh(household_dat$S_cesds,cluster=F)$std.error[2],model_3_hh(household_dat$S_pss,cluster=F)$std.error[2])
-
 Model_3 <- data.frame(var = variables,coeff_3 = model_3_coeff,sce = model_3_std_error_clustered,sc=model_3_std_error)
 ```
 
@@ -314,40 +297,47 @@ control_mean <- function(dependent) {
   updated_dependent<- dependent[!is.na(dependent)]
   return(mean(updated_dependent))
 }
-
 # function to calculate control standard deviation
 control_sd <- function(dependent) {
   updated_dependent<- dependent[!is.na(dependent)]
   return(sd(updated_dependent))
 }
-
 # computes control mean for each dependent variable
 control_mean <- c(control_mean(household_control$S_shcementfloor), control_mean(household_control$S_cementfloorkit), control_mean(household_control$S_cementfloordin), control_mean(household_control$S_cementfloorbat),control_mean(household_control$S_cementfloorbed),control_mean(individual_control$S_parcount),control_mean(individual_control$S_diarrhea),control_mean(individual_control$S_anemia),control_mean(individual_control$S_mccdts),control_mean(individual_control$S_pbdypct),control_mean(individual_control$S_haz),control_mean(individual_control$S_whz),control_mean(household_control$S_satisfloor),control_mean(household_control$S_satishouse),control_mean(household_control$S_satislife),control_mean(household_control$S_cesds),control_mean(household_control$S_pss))
-
 # computes control standard deviation for each dependent variable
 control_sd <- c(control_sd(household_control$S_shcementfloor), control_sd(household_control$S_cementfloorkit), control_sd(household_control$S_cementfloordin),control_sd(household_control$S_cementfloorbat),control_sd(household_control$S_cementfloorbed),control_sd(individual_control$S_parcount),control_sd(individual_control$S_diarrhea),control_sd(individual_control$S_anemia),control_sd(individual_control$S_mccdts),control_sd(individual_control$S_pbdypct),control_sd(individual_control$S_haz),control_sd(individual_control$S_whz),control_sd(household_control$S_satisfloor),control_sd(household_control$S_satishouse),control_sd(household_control$S_satislife),control_sd(household_control$S_cesds),control_sd(household_control$S_pss))
-
 Mean_SD <- data.frame(var = variables, control_group_mean = control_mean, control_group_sd = control_sd)
 ```
 
+Here we have graphical representations of the regression coefficients for each dependent variables separated by model and table. We used standard clustered error for the error bars. 
+
 ```{r}
-ggplot(Model_1,aes(x=var,y=coeff_1))+
-  geom_pointrange(aes(ymin=coeff_1-sce,ymax=coeff_1+sce))+scale_x_discrete(labels=variables)+labs(y="Model 1 Linear Regression Coefficients",title="Model 1 Regression Coefficents for dependent variables")
-ggplot(Model_2,aes(x=var,y=coeff_2))+
-  geom_pointrange(aes(ymin=coeff_2-sce,ymax=coeff_2+sce))+scale_x_discrete(labels=variables)+labs(y="Model 2 Linear Regression Coefficients",title="Model 2 Regression Coefficents for dependent variables")
-ggplot(Model_3,aes(x=var,y=coeff_3))+
-  geom_pointrange(aes(ymin=coeff_3-sce,ymax=coeff_3+sce))+scale_x_discrete(labels=variables)+labs(y="Model 3 Linear Regression Coefficients",title="Model 3 Regression Coefficents for dependent variables")
+#create a df so we can facet_grid by model type 
+graphing<-rbind(Model_1%>%rename(coeff=coeff_1)%>%mutate(model_type=1)%>%select(coeff,sce,var,model_type),Model_2%>%rename(coeff=coeff_2)%>%mutate(model_type=2)%>%select(coeff,sce,var,model_type),Model_3%>%rename(coeff=coeff_3)%>%mutate(model_type=3)%>%select(coeff,sce,var,model_type))
+#visualizations of coefficients for each model, grouped by dependent variable type (effectiveness, adult happiness, child health)
+#corresponds to tables 4-6 
+
+ggplot(graphing[c(1:5,18:22,35:39),],aes(x=var,y=coeff))+
+  geom_pointrange(aes(ymin=coeff-sce,ymax=coeff+sce))+scale_x_discrete(labels=c("cement_fl",variables[2:5]))+facet_grid(~model_type)+labs(y=" Linear Regression Coefficients",title="Table 4 Regression Coefficents by Model")+theme(axis.text = element_text(size=4,face="bold"))
+
+
+ggplot(graphing[c(6:12,23:29,40:46),],aes(x=var,y=coeff))+
+  geom_pointrange(aes(ymin=coeff-sce,ymax=coeff+sce))+scale_x_discrete(labels=c(variables[6:12]))+facet_grid(~model_type)+labs(y=" Linear Regression Coefficients",title="Table 5 Regression Coefficents by Model")+theme(axis.text = element_text(size=4,face="bold"))
+
+
+ggplot(graphing[c(13:17,30:34,47:51),],aes(x=var,y=coeff))+
+  geom_pointrange(aes(ymin=coeff-sce,ymax=coeff+sce))+scale_x_discrete(labels=c(variables[13:17]))+facet_grid(~model_type)+labs(y=" Linear Regression Coefficients",title="Table 6 Regression Coefficents by Model")+theme(axis.text = element_text(size=4,face="bold"))
+
+
+
 ```
 
 # Compile Results into Tables 4, 5, 6
 Organizes above results into Tables 4, 5, and 6 as in the paper.
 ```{r model-put-together}
 Model <- Model_1 %>% left_join(Model_2, by = "var") %>% left_join(Model_3, by = "var") %>% left_join(Mean_SD, by = "var")
-
 Table_4 <- Model %>% filter(var == "share_cement_floors" | var == "kitchen" | var == "dining_room" | var == "bathroom" | var == "bedroom") %>% select(var, control_group_mean, control_group_sd, coeff_1, coeff_2, coeff_3) %>% rename("Model_1" = coeff_1, "Model_2" = coeff_2, "Model_3" = coeff_3, "Dependent" = var)
-
 Table_5 <- Model %>% filter(var == "parasite" | var == "diarrhea" | var == "anemia" | var == "MacArthur" | var == "Peabody" | var == "height" | var == "weight") %>% select(var, control_group_mean, control_group_sd, coeff_1, coeff_2, coeff_3) %>% rename("Model_1" = coeff_1, "Model_2" = coeff_2, "Model_3" = coeff_3, "Dependent" = var)
-
 Table_6 <- Model %>% filter(var == "sat_floor" | var == "sat_House" | var == "sat_life" | var == "depression" | var == "stress") %>% select(var, control_group_mean, control_group_sd, coeff_1, coeff_2, coeff_3) %>% rename("Model_1" = coeff_1, "Model_2" = coeff_2, "Model_3" = coeff_3, "Dependent" = var)
 ```
 
@@ -355,10 +345,8 @@ Table_6 <- Model %>% filter(var == "sat_floor" | var == "sat_House" | var == "sa
 Here, we try to see if we can predict whether or not a house recieved the treatment based on the pre-treatment control variables. If we can predict whether or not the house received the treatment, we would have evidence to suggest that the treatment and control groups are not relatively equal, as claimed in the paper.
 ```{r logistic-regression}
 household_dat$dpisofirme <- factor(household_dat$dpisofirme)
-
 # selects out control variables
 controlled_household <- household_dat %>% select(S_HHpeople, S_headage, S_spouseage, S_headeduc, S_spouseeduc, S_dem1, S_dem2, S_dem3, S_dem4, S_dem5, S_dem6, S_dem7, S_dem8, S_waterland, S_waterhouse, S_electricity, S_hasanimals, S_animalsinside, S_garbage, S_washhands, S_cashtransfers, S_milkprogram, S_foodprogram, S_seguropopular)
-
 num_rows <- nrow(controlled_household)
 frac_train <- 0.8
 num_train <- floor(num_rows * frac_train)
@@ -396,13 +384,10 @@ df %>% filter(actual == '0') %>% summarize(fpr = mean(pred == '1'))
 Here, we try to see if we can predict whether or not a house recieved the treatment based on the pre-treatment  variables. If we can predict whether or not the house received the treatment, we would have evidence to suggest that the treatment and control groups are not relatively equal, as claimed in the paper.
 ```{r Logistic-Regression}
 set.seed(42)
-
 household_dat$dpisofirme <- factor(household_dat$dpisofirme)
-
 # selects pre-treatment variables
 controlled_household <- household_dat %>%group_by(idcluster)%>%select(dpisofirme,C_blocksdirtfloor,C_HHdirtfloor,C_child05,C_households,C_people,C_rooms,C_HHpersons,C_waterland,C_waterhouse,C_waterbath,C_gasheater,C_refrigerator,C_washing,C_telephone,C_vehicle,C_overcrowding,C_poverty,C_illiterate,C_headeduc,C_dropouts515,C_employment,C_earnincome)%>%ungroup()%>%distinct()%>%select(-idcluster)
-
-# separates training and test data
+# Set up 5 fold cross validation using household data 
 num_folds <- 5
 num_rows <- nrow(controlled_household)
 frac_train <- 0.8
@@ -410,8 +395,11 @@ num_train <- floor(num_rows * frac_train)
 ndx <- sample(1:num_rows, num_train, replace=F)
 classify<- controlled_household[ndx, ] %>%
   mutate(fold = (row_number() %% num_folds) + 1)
-  # do 5-fold cross-validation within each value of 
+  # do 5-fold cross-validation within each value of
+#initiate result lists to average final results 
 accuracy<-c()
+#topterm and bottomterm are the variables with most pos/neg log regression
+#coefficients 
 topterm<-c()
 bottomterm<-c()
 fpr<-c()
@@ -424,32 +412,37 @@ for (f in 1:num_folds) {
     model <- glm(training$dpisofirme ~., data=training, family = "binomial")
     # evaluate on the validation data
     testing <- filter(classify, fold == f)
+    df <- data.frame(actual = testing$dpisofirme, log_odds = log_odds    predict(model,testing)) %>% mutate(pred = ifelse(log_odds > 0, '1', '0'))
     
-    df <- data.frame(actual = testing$dpisofirme, log_odds = predict(model, testing)) %>% mutate(pred = ifelse(log_odds > 0, '1', '0'))
-table(actual = df$actual, predicted = df$pred)
-# accuracy: fraction of correct classifications
-acc<-df %>%summarize(acc = mean(pred == actual,na.rm=T))
-accuracy[counter]<-acc[1]
-prec<-df %>% filter(pred == '1') %>% summarize(prec = mean(actual == '1',na.rm=T))
-precision[counter]<-prec[1]
-rec<-df %>% filter(actual == '1') %>% summarize(recall = mean(pred == '1',na.rm=T))
-recall[counter]<-rec[1]
-fp<-df %>% filter(actual == '0') %>% summarize(fpr = mean(pred == '1',na.rm=T))
-fpr[counter]<-fp[1]
-modeldf<-tidy(model)
-top<-modeldf%>%arrange(desc(estimate))%>%select(term)
-bottom<-modeldf%>%arrange(estimate)%>%select(term)
-topterm[counter]<-top[1,1]
-bottomterm[counter]<-bottom[1,1]
-counter<-counter+1
+# accuracy: correct/total
+    acc<-df %>%summarize(acc = mean(pred == actual,na.rm=T))
+    accuracy[counter]<-acc[1]
+    #precision: true positives/all predicted positives
+    prec<-df %>% filter(pred == '1') %>% summarize(prec = mean(actual == '1',na.rm=T))
+    precision[counter]<-prec[1]
+    rec<-df %>% filter(actual == '1') %>% summarize(recall = mean(pred == '1',na.rm=T))
+    #recall: true positives/all actual positives 
+    recall[counter]<-rec[1]
+    #false positive rate 
+    fp<-df %>% filter(actual == '0') %>% summarize(fpr = mean(pred == '1',na.rm=T))
+    fpr[counter]<-fp[1]
+    modeldf<-tidy(model)
+    top<-modeldf%>%arrange(desc(estimate))%>%select(term)
+    bottom<-modeldf%>%arrange(estimate)%>%select(term)
+    topterm[counter]<-top[1,1]
+    bottomterm[counter]<-bottom[1,1]
+    counter<-counter+1
 }  
+#calulcates mean of all of the validations 
 mean(as.numeric(accuracy))
 mean(as.numeric(recall))
 mean(as.numeric(precision))
 mean(as.numeric(fpr))
 ```
+Visuals comparing some dependent variables with and without Dpisofirme 
 
 ```{r visuals}
+
 supp.labs <- c("No Pisofirme", "Pisofirme")
 names(supp.labs) <- c(0, 1)
 ggplot(household_dat)+geom_histogram(aes(x=C_waterland))+facet_grid(~dpisofirme,labeller=labeller(dpisofirme=supp.labs))
@@ -467,14 +460,12 @@ model_1_i_rsq <- function(dependent) {
   dependent_updated <- dependent[!is.na(dependent)]
   return(summary(lm(dependent_updated ~ dummy_i))$r.squared)
 }
-
 # function for model 1, household data set
 model_1_hh_rsq <- function(dependent) {
   dummy_hh <- household_dat$dpisofirme[!is.na(dependent)]
   dependent_updated <- dependent[!is.na(dependent)]
   return(summary(lm(dependent_updated ~ dummy_hh ))$r.squared)
 }
-
 # function for model 2, individual data set
 model_2_i_rsq <- function(dependent) {
   # control variables
@@ -499,7 +490,6 @@ model_2_i_rsq <- function(dependent) {
   updated_dependent<- dependent[!is.na(dependent)]
   return(summary(lm( updated_dependent ~ x18 + x1 + x2 + x3  + x4+ x5+ x6+ x7+ x8+ x9+ x10+ x11+ x12+ x13+ x14+ x15+ x16+ x17))$r.squared)
 }
-
 # function for model 2, household data set
 model_2_hh_sq <- function(dependent) {
   # control variables
@@ -527,7 +517,6 @@ model_2_hh_sq <- function(dependent) {
   updated_dependent<- dependent[!is.na(dependent)]
   return(summary(lm(updated_dependent ~ x21 + x1 + x2 + x3  + x4+ x5+ x6+ x7+ x8+ x9+ x10+ x11+ x12+ x13+ x14+ x15+ x16+ x17+ x18 + x19+ x20))$r.squared)
 }
-
 # function for model 3, individual data set
 model_3_i_rsq <- function(dependent) {
   # control varibales
@@ -556,7 +545,6 @@ model_3_i_rsq <- function(dependent) {
   updated_dependent<- dependent[!is.na(dependent)]
   return(summary(lm( updated_dependent ~ x22 + x1 + x2 + x3  + x4+ x5+ x6+ x7+ x8+ x9+ x10+ x11+ x12+ x13+ x14+ x15+ x16+ x17+ x18+x19 +x20+x22 ))$r.squared)
 }
-
 # function for model 3, household data set
 model_3_hh_rsq <- function(dependent) {
   # control variables
@@ -593,25 +581,16 @@ model_3_hh_rsq <- function(dependent) {
 ```{r-sq-tables}
 # r square coefficients for table 4
 T4_rsq <- data.frame(dependent = c("share_cement_floors", "kitchen", "dining_room", "bedroom", "bathroom"))
-
 T4_rsq$data <- list(c(household_dat$S_shcementfloor), c(household_dat$S_cementfloorkit), c(household_dat$S_cementfloordin), c(household_dat$S_cementfloorbed), c(household_dat$S_cementfloorbat))
-
 T4_rsq <- T4_rsq %>% mutate(r_sq_m1 = map(data, model_1_hh_rsq), r_sq_m2 = map(data, model_2_hh_sq), r_sq_m3 = map(data, model_3_hh_rsq)) %>% select(dependent, r_sq_m1, r_sq_m2, r_sq_m3)
-
 # r squared coefficients for table 5
 T5_rsq <- data.frame(dependent = c("parasite", "diarrhea", "anemia", "MacArthur", "Peabody", "height", "weight"))
-
 T5_rsq$data <- list(c(individual_dat$S_parcount), c(individual_dat$S_diarrhea), c(individual_dat$S_anemia), c(individual_dat$S_mccdts), c(individual_dat$S_pbdypct), c(individual_dat$S_haz), c(individual_dat$S_whz))
-
 T5_rsq <- T5_rsq %>% mutate(r_sq_m1 = map(data, model_1_i_rsq), r_sq_m2 = map(data, model_2_i_rsq), r_sq_m3 = map(data, model_3_i_rsq)) %>% select(dependent, r_sq_m1, r_sq_m2, r_sq_m3)
-
 # r squared coefficients for table 6
 T6_rsq <- data.frame(dependent = c("sat_floor", "sat_house", "sat_life", "depression", "stress"))
-
 T6_rsq$data <- list(c(household_dat$S_satisfloor), c(household_dat$S_satishouse), c(household_dat$S_satislife), c(household_dat$S_cesds), c(household_dat$S_pss))
-
 T6_rsq <- T6_rsq %>% mutate(r_sq_m1 = map(data, model_1_hh_rsq), r_sq_m2 = map(data, model_2_hh_sq), r_sq_m3 = map(data, model_3_hh_rsq)) %>% select(dependent, r_sq_m1, r_sq_m2, r_sq_m3)
-
 ```
 # R Squared Plots
 Here, we try to see if there is any trend between the coefficients for the dependents for each model and the r squared values.
@@ -620,12 +599,26 @@ Here, we try to see if there is any trend between the coefficients for the depen
 T4_2 <- Table_4 %>% full_join(T4_rsq, by = "Dependent")
 T5_2 <- Table_5 %>% full_join(T5_rsq, by = "Dependent")
 T6_2 <- Table_6 %>% full_join(T6_rsq, by = "Dependent")
-
 T_Tot <- T4_2 %>% full_join(T5_2) %>% full_join(T6_2)
-
 ggplot(data = T_Tot) + geom_point(mapping = aes(x = Model_1, y = r_sq_m1)) + xlab("Model 1 Coefficients") + ylab("Model 1 R Squared") + ggtitle("Model 1")
 ggplot(data = T_Tot) + geom_point(mapping = aes(x = Model_2, y = r_sq_m2)) + xlab("Model 2 Coefficients") + ylab("Model 2 R Squared") + ggtitle("Model 2")
 ggplot(data = T_Tot) + geom_point(mapping = aes(x = Model_3, y = r_sq_m3)) + xlab("Model 3 Coefficients") + ylab("Model 3 R Squared") + ggtitle("Model 3")
+```
+Rsquared values for each table, separated by model using standard error as error bars (not clustered)
+```{r}
+T6_rsq$r_sq_m1<-as.numeric(T6_rsq$r_sq_m1)
+plot_r_6<-T6_rsq%>%gather("model_type","coeff",2:4)%>%mutate(sc=graphing[c(13:17,30:34,47:51),]$sc)%>%mutate(coeff=as.numeric(coeff))
+T5_rsq$r_sq_m1<-as.numeric(T5_rsq$r_sq_m1)
+plot_r_5<-T5_rsq%>%gather("model_type","coeff",2:4)%>%mutate(sc=graphing[c(6:12,23:29,40:46),]$sc)%>%mutate(coeff=as.numeric(coeff))
+
+T4_rsq$r_sq_m1<-as.numeric(T4_rsq$r_sq_m1)
+plot_r_4<-T4_rsq%>%gather("model_type","coeff",2:4)%>%mutate(sc=graphing[c(1:5,18:22,35:39),]$sc)%>%mutate(coeff=as.numeric(coeff))
+ggplot(plot_r_4,aes(x=dependent,y=coeff))+geom_pointrange(aes(ymin=coeff-sc,ymax=coeff+sc))+scale_x_discrete(labels=c(variables[1:5]))+facet_grid(~model_type)+labs(y="R_sq",title="Table 4 R_sq by Model")+theme(axis.text = element_text(size=4,face="bold"))
+ggplot(plot_r_5,aes(x=dependent,y=coeff))+geom_pointrange(aes(ymin=coeff-sc,ymax=coeff+sc))+scale_x_discrete(labels=c(variables[13:17]))+facet_grid(~model_type)+labs(y="R_sq",title="Table 5 R_sq by Model")+theme(axis.text = element_text(size=4,face="bold"))
+
+
+ggplot(plot_r_6,aes(x=dependent,y=coeff))+geom_pointrange(aes(ymin=coeff-sc,ymax=coeff+sc))+scale_x_discrete(labels=c(variables[13:17]))+facet_grid(~model_type)+labs(y=" R_sq",title="Table 6 R_sq by Model")+theme(axis.text = element_text(size=4,face="bold"))
+
 ```
 
 The following is a list of all packages used to generate these results. (Leave at very end of file.)
