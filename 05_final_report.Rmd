@@ -624,6 +624,15 @@ ggplot(data = T_Tot) + geom_point(mapping = aes(x = Model_1, y = r_sq_m1)) + xla
 ggplot(data = T_Tot) + geom_point(mapping = aes(x = Model_2, y = r_sq_m2)) + xlab("Model 2 Coefficients") + ylab("Model 2 R Squared") + ggtitle("Model 2")
 ggplot(data = T_Tot) + geom_point(mapping = aes(x = Model_3, y = r_sq_m3)) + xlab("Model 3 Coefficients") + ylab("Model 3 R Squared") + ggtitle("Model 3")
 ```
+```{r r-sq-plots-no-outliers}
+# here we remove outliers
+T_Tot2 <- T_Tot %>% filter(Model_1 > -1) %>% filter(Model_1 < 1) %>% filter(Model_2 > -1) %>% filter(Model_2 < 1) %>% filter(Model_3 > -1) %>% filter(Model_3 < 1)
+
+ggplot(data = T_Tot2) + geom_point(mapping = aes(x = Model_1, y = r_sq_m1)) + xlab("Model 1 Coefficients") + ylab("Model 1 R Squared") + ggtitle("Model 1 No Outliers")
+ggplot(data = T_Tot2) + geom_point(mapping = aes(x = Model_2, y = r_sq_m2)) + xlab("Model 2 Coefficients") + ylab("Model 2 R Squared") + ggtitle("Model 2 No Outliers")
+ggplot(data = T_Tot2) + geom_point(mapping = aes(x = Model_3, y = r_sq_m3)) + xlab("Model 3 Coefficients") + ylab("Model 3 R Squared") + ggtitle("Model 3 No Outliers")
+```
+
 Rsquared values for each table, separated by model using standard error as error bars (not clustered)
 ```{r}
 T6_rsq$r_sq_m1<-as.numeric(T6_rsq$r_sq_m1)
