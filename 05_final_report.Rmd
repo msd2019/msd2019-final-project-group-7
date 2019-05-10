@@ -613,25 +613,19 @@ T6_rsq$data <- list(c(household_dat$S_satisfloor), c(household_dat$S_satishouse)
 T6_rsq <- T6_rsq %>% mutate(r_sq_m1 = map(data, model_1_hh_rsq), r_sq_m2 = map(data, model_2_hh_sq), r_sq_m3 = map(data, model_3_hh_rsq)) %>% select(dependent, r_sq_m1, r_sq_m2, r_sq_m3)
 
 ```
+# R Squared Plots
+Here, we try to see if there is any trend between the coefficients for the dependents for each model and the r squared values.
 
 ```{r r-sq-plots}
-# join with df that contain coefficients
 T4_2 <- Table_4 %>% full_join(T4_rsq, by = "Dependent")
 T5_2 <- Table_5 %>% full_join(T5_rsq, by = "Dependent")
 T6_2 <- Table_6 %>% full_join(T6_rsq, by = "Dependent")
 
-# plot coefficients versus r squared values
-ggplot(data = T4_2) + geom_point(mapping = aes(x = Model_1, y = r_sq_m1)) + xlab("Model 1 Coefficients") + ylab("Model 1 R Squared") + ggtitle("Table 4")
-ggplot(data = T4_2) + geom_point(mapping = aes(x = Model_2, y = r_sq_m2)) + xlab("Model 2 Coefficients") + ylab("Model 2 R Squared") + ggtitle("Table 4")
-ggplot(data = T4_2) + geom_point(mapping = aes(x = Model_3, y = r_sq_m3)) + xlab("Model 3 Coefficients") + ylab("Model 3 R Squared") + ggtitle("Table 4")
+T_Tot <- T4_2 %>% full_join(T5_2) %>% full_join(T6_2)
 
-ggplot(data = T5_2) + geom_point(mapping = aes(x = Model_1, y = r_sq_m1)) + xlab("Model 1 Coefficients") + ylab("Model 1 R Squared") + ggtitle("Table 5")
-ggplot(data = T5_2) + geom_point(mapping = aes(x = Model_2, y = r_sq_m2)) + xlab("Model 2 Coefficients") + ylab("Model 2 R Squared") + ggtitle("Table 5")
-ggplot(data = T5_2) + geom_point(mapping = aes(x = Model_3, y = r_sq_m3)) + xlab("Model 3 Coefficients") + ylab("Model 3 R Squared") + ggtitle("Table 5")
-
-ggplot(data = T6_2) + geom_point(mapping = aes(x = Model_1, y = r_sq_m1)) + xlab("Model 1 Coefficients") + ylab("Model 1 R Squared") + ggtitle("Table 6")
-ggplot(data = T6_2) + geom_point(mapping = aes(x = Model_2, y = r_sq_m2)) + xlab("Model 2 Coefficients") + ylab("Model 2 R Squared") + ggtitle("Table 6")
-ggplot(data = T6_2) + geom_point(mapping = aes(x = Model_3, y = r_sq_m3)) + xlab("Model 3 Coefficients") + ylab("Model 3 R Squared") + ggtitle("Table 6")
+ggplot(data = T_Tot) + geom_point(mapping = aes(x = Model_1, y = r_sq_m1)) + xlab("Model 1 Coefficients") + ylab("Model 1 R Squared") + ggtitle("Model 1")
+ggplot(data = T_Tot) + geom_point(mapping = aes(x = Model_2, y = r_sq_m2)) + xlab("Model 2 Coefficients") + ylab("Model 2 R Squared") + ggtitle("Model 2")
+ggplot(data = T_Tot) + geom_point(mapping = aes(x = Model_3, y = r_sq_m3)) + xlab("Model 3 Coefficients") + ylab("Model 3 R Squared") + ggtitle("Model 3")
 ```
 
 The following is a list of all packages used to generate these results. (Leave at very end of file.)
