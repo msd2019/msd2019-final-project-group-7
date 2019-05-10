@@ -49,7 +49,7 @@ model_1_i <- function(dependent,cluster=T) {
   data_updated<-individual_dat[!is.na(dependent),]
   dependent_updated <- dependent[!is.na(dependent)]
   if(cluster==T){
-  return(tidy(lm_robust(dependent_updated ~ dpisofirme,data_updated,clusters=idcluster,return_vcov = T)))}
+  return(tidy(lm_robust(dependent_updated ~ dpisofirme,data_updated,clusters=idcluster)))}
   else{
     return(tidy(lm_robust(dependent_updated ~ dpisofirme,data_updated)))
   }
@@ -75,7 +75,7 @@ model_1_std_error_clustered<- c(model_1_hh(household_dat$S_shcementfloor)$std.er
 # calculates non-clusted standard errors for each dependent variable
 model_1_std_error<- c(model_1_hh(household_dat$S_shcementfloor,cluster=F)$std.error[2],model_1_hh(household_dat$S_cementfloorkit,cluster=F)$std.error[2],model_1_hh(household_dat$S_cementfloordin,cluster=F)$std.error[2],model_1_hh(household_dat$S_cementfloorbat,cluster=F)$std.error[2],model_1_hh(household_dat$S_cementfloorbed,cluster=F)$std.error[2],model_1_i(individual_dat$S_parcount,cluster=F)$std.error[2],model_1_i(individual_dat$S_diarrhea,cluster=F)$std.error[2],model_1_i(individual_dat$S_anemia,cluster=F)$std.error[2],model_1_i(individual_dat$S_mccdts,cluster=F)$std.error[2],model_1_i(individual_dat$S_pbdypct,cluster=F)$std.error[2],model_1_i(individual_dat$S_haz,cluster=F)$std.error[2],model_1_i(individual_dat$S_whz,cluster=F)$std.error[2],model_1_hh(household_dat$S_satisfloor,cluster=F)$std.error[2],model_1_hh(household_dat$S_satishouse,cluster=F)$std.error[2],model_1_hh(household_dat$S_satislife,cluster=F)$std.error[2],model_1_hh(household_dat$S_cesds,cluster=F)$std.error[2],model_1_hh(household_dat$S_pss,cluster=F)$std.error[2])
 variables <- c("share_cement_floors", "kitchen", "dining_room", "bathroom", "bedroom", "parasite","diarrhea","anemia","MacArther","Peabody","height","weight","Sat_floor","Sat_House","Sat_life","Depression","Stress")
-Model_1 <- data.frame(var = variables,coeff_1 = model_1_coeff,sce = model_1_std_error_clustered,sc=model_1_std_error)
+Model_1 <- data.frame(var = variables,coeff_1 = model_1_coeff,sce_1 = model_1_std_error_clustered,se_1=model_1_std_error)
 ```
 
 # Model 2: age, demographic, and health-habit controls
@@ -191,7 +191,7 @@ model_2_coeff <- c(model_2_hh(household_dat$S_shcementfloor)$estimate[2],model_2
 model_2_std_error_clustered<- c(model_2_hh(household_dat$S_shcementfloor)$std.error[2],model_2_hh(household_dat$S_cementfloorkit)$std.error[2],model_2_hh(household_dat$S_cementfloordin)$std.error[2],model_2_hh(household_dat$S_cementfloorbat)$std.error[2],model_2_hh(household_dat$S_cementfloorbed)$std.error[2],model_2_i(individual_dat$S_parcount)$std.error[2],model_2_i(individual_dat$S_diarrhea)$std.error[2],model_2_i(individual_dat$S_anemia)$std.error[2],model_2_i(individual_dat$S_mccdts)$std.error[2],model_2_i(individual_dat$S_pbdypct)$std.error[2],model_2_i(individual_dat$S_haz)$std.error[2],model_2_i(individual_dat$S_whz)$std.error[2],model_2_hh(household_dat$S_satisfloor)$std.error[2],model_2_hh(household_dat$S_satishouse)$std.error[2],model_2_hh(household_dat$S_satislife)$std.error[2],model_2_hh(household_dat$S_cesds)$std.error[2],model_2_hh(household_dat$S_pss)$std.error[2])
 # caluclates non-clustered standard errors for each dependent variable
 model_2_std_error<- c(model_2_hh(household_dat$S_shcementfloor,cluster=F)$std.error[2],model_2_hh(household_dat$S_cementfloorkit,cluster=F)$std.error[2],model_2_hh(household_dat$S_cementfloordin,cluster=F)$std.error[2],model_2_hh(household_dat$S_cementfloorbat,cluster=F)$std.error[2],model_2_hh(household_dat$S_cementfloorbed,cluster=F)$std.error[2],model_2_i(individual_dat$S_parcount,cluster=F)$std.error[2],model_2_i(individual_dat$S_diarrhea,cluster=F)$std.error[2],model_2_i(individual_dat$S_anemia,cluster=F)$std.error[2],model_2_i(individual_dat$S_mccdts,cluster=F)$std.error[2],model_2_i(individual_dat$S_pbdypct,cluster=F)$std.error[2],model_2_i(individual_dat$S_haz,cluster=F)$std.error[2],model_2_i(individual_dat$S_whz,cluster=F)$std.error[2],model_2_hh(household_dat$S_satisfloor,cluster=F)$std.error[2],model_2_hh(household_dat$S_satishouse,cluster=F)$std.error[2],model_2_hh(household_dat$S_satislife,cluster=F)$std.error[2],model_2_hh(household_dat$S_cesds,cluster=F)$std.error[2],model_2_hh(household_dat$S_pss,cluster=F)$std.error[2])
-Model_2 <- data.frame(var = variables,coeff_2 = model_2_coeff,sce = model_2_std_error_clustered,sc=model_2_std_error)
+Model_2 <- data.frame(var = variables,coeff_2 = model_2_coeff,sce_2 = model_2_std_error_clustered,se_2=model_2_std_error)
 ```
 
 # Model 3: age, demographic, health-habit and public social programs controls
@@ -286,7 +286,7 @@ model_3_coeff <- c(model_3_hh(household_dat$S_shcementfloor)$estimate[2],model_3
 model_3_std_error_clustered<- c(model_3_hh(household_dat$S_shcementfloor)$std.error[2],model_3_hh(household_dat$S_cementfloorkit)$std.error[2],model_3_hh(household_dat$S_cementfloordin)$std.error[2],model_3_hh(household_dat$S_cementfloorbat)$std.error[2],model_3_hh(household_dat$S_cementfloorbed)$std.error[2],model_3_i(individual_dat$S_parcount)$std.error[2],model_3_i(individual_dat$S_diarrhea)$std.error[2],model_3_i(individual_dat$S_anemia)$std.error[2],model_3_i(individual_dat$S_mccdts)$std.error[2],model_3_i(individual_dat$S_pbdypct)$std.error[2],model_3_i(individual_dat$S_haz)$std.error[2],model_3_i(individual_dat$S_whz)$std.error[2],model_3_hh(household_dat$S_satisfloor)$std.error[2],model_3_hh(household_dat$S_satishouse)$std.error[2],model_3_hh(household_dat$S_satislife)$std.error[2],model_3_hh(household_dat$S_cesds)$std.error[2],model_3_hh(household_dat$S_pss)$std.error[2])
 # caluclates non-clustered standard errors for each dependent variable
 model_3_std_error<- c(model_3_hh(household_dat$S_shcementfloor,cluster=F)$std.error[2],model_3_hh(household_dat$S_cementfloorkit,cluster=F)$std.error[2],model_3_hh(household_dat$S_cementfloordin,cluster=F)$std.error[2],model_3_hh(household_dat$S_cementfloorbat,cluster=F)$std.error[2],model_3_hh(household_dat$S_cementfloorbed,cluster=F)$std.error[2],model_3_i(individual_dat$S_parcount,cluster=F)$std.error[2],model_3_i(individual_dat$S_diarrhea,cluster=F)$std.error[2],model_3_i(individual_dat$S_anemia,cluster=F)$std.error[2],model_3_i(individual_dat$S_mccdts,cluster=F)$std.error[2],model_3_i(individual_dat$S_pbdypct,cluster=F)$std.error[2],model_3_i(individual_dat$S_haz,cluster=F)$std.error[2],model_3_i(individual_dat$S_whz,cluster=F)$std.error[2],model_3_hh(household_dat$S_satisfloor,cluster=F)$std.error[2],model_3_hh(household_dat$S_satishouse,cluster=F)$std.error[2],model_3_hh(household_dat$S_satislife,cluster=F)$std.error[2],model_3_hh(household_dat$S_cesds,cluster=F)$std.error[2],model_3_hh(household_dat$S_pss,cluster=F)$std.error[2])
-Model_3 <- data.frame(var = variables,coeff_3 = model_3_coeff,sce = model_3_std_error_clustered,sc=model_3_std_error)
+Model_3 <- data.frame(var = variables,coeff_3 = model_3_coeff,sce_3 = model_3_std_error_clustered,se_3=model_3_std_error)
 ```
 
 # Control Group Means and Standard Deviations
@@ -335,11 +335,31 @@ ggplot(graphing[c(13:17,30:34,47:51),],aes(x=var,y=coeff))+
 # Compile Results into Tables 4, 5, 6
 Organizes above results into Tables 4, 5, and 6 as in the paper.
 ```{r model-put-together}
-Model <- Model_1 %>% left_join(Model_2, by = "var") %>% left_join(Model_3, by = "var") %>% left_join(Mean_SD, by = "var")
-Table_4 <- Model %>% filter(var == "share_cement_floors" | var == "kitchen" | var == "dining_room" | var == "bathroom" | var == "bedroom") %>% select(var, control_group_mean, control_group_sd, coeff_1, coeff_2, coeff_3) %>% rename("Model_1" = coeff_1, "Model_2" = coeff_2, "Model_3" = coeff_3, "Dependent" = var)
-Table_5 <- Model %>% filter(var == "parasite" | var == "diarrhea" | var == "anemia" | var == "MacArthur" | var == "Peabody" | var == "height" | var == "weight") %>% select(var, control_group_mean, control_group_sd, coeff_1, coeff_2, coeff_3) %>% rename("Model_1" = coeff_1, "Model_2" = coeff_2, "Model_3" = coeff_3, "Dependent" = var)
-Table_6 <- Model %>% filter(var == "sat_floor" | var == "sat_House" | var == "sat_life" | var == "depression" | var == "stress") %>% select(var, control_group_mean, control_group_sd, coeff_1, coeff_2, coeff_3) %>% rename("Model_1" = coeff_1, "Model_2" = coeff_2, "Model_3" = coeff_3, "Dependent" = var)
+Model <- Model_1 %>% left_join(Model_2, by = "var") %>% left_join(Model_3, by = "var") %>% left_join(Mean_SD, by = "var")%>%mutate(coef_mean_1=coeff_1/control_group_mean)%>%mutate(coef_mean_2=coeff_2/control_group_mean)%>%mutate(coef_mean_3=coeff_3/control_group_mean)
+
+
+
+Table_4 <- Model %>% filter(var == "share_cement_floors" | var == "kitchen" | var == "dining_room" | var == "bathroom" | var == "bedroom") %>% select(var, control_group_mean, control_group_sd, coeff_1,sce_1,coef_mean_1, coeff_2,sce_2,coef_mean_2, coeff_3,sce_3,coef_mean_3) %>% rename( "Dependent" = var)
+
+
+
+Table_5 <- Model %>% filter(var == "parasite" | var == "diarrhea" | var == "anemia" | var == "MacArthur" | var == "Peabody" | var == "height" | var == "weight") %>% select(var, control_group_mean, control_group_sd, coeff_1,sce_1,coef_mean_1, coeff_2,sce_2,coef_mean_2, coeff_3,sce_3,coef_mean_3) %>% rename("Dependent" = var)
+
+Table_6 <- Model %>% filter(var == "sat_floor" | var == "sat_House" | var == "sat_life" | var == "depression" | var == "stress") %>% select(var, control_group_mean, control_group_sd, coeff_1,sce_1,coef_mean_1, coeff_2,sce_2,coef_mean_2, coeff_3,sce_3,coef_mean_3) %>% rename( "Dependent" = var)
 ```
+
+Compare Clustered and Non Clustered SE:
+```{r}
+
+##make some sort of barplot i cant think rn
+#errors<-Model%>%select(var,sce_1,se_1,sce_2,se_2,sce_3,se_3)
+#plottingerror<-rbind(errors%>%select(sce_1,var)%>%spread(var,sce_1),errors%>%select(se_1,var)%>%spread(var,se_1),errors%>%select(sce_2,var)%>%spread(var,sce_2),errors%>%select(se_2,var)%>%spread(var,se_2),errors%>%select(sce_3,var)%>%spread(var,sce_3),errors%>%select(se_3,var)%>%spread(var,se_3))
+
+#ggplot(errors)+geom_bar(sce_1,se_1)+facet_grid(~var)
+
+```
+
+
 
 # Logistic Regression
 Here, we try to see if we can predict whether or not a house recieved the treatment based on the pre-treatment control variables. If we can predict whether or not the house received the treatment, we would have evidence to suggest that the treatment and control groups are not relatively equal, as claimed in the paper.
