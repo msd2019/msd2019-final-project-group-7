@@ -394,7 +394,7 @@ df %>% filter(actual == '0') %>% summarize(fpr = mean(pred == '1'))
 
 # Logistic Regression
 Here, we try to see if we can predict whether or not a house recieved the treatment based on the pre-treatment  variables. If we can predict whether or not the house received the treatment, we would have evidence to suggest that the treatment and control groups are not relatively equal, as claimed in the paper.
-```{Logistic-Regression}
+```{r Logistic-Regression}
 set.seed(42)
 
 household_dat$dpisofirme <- factor(household_dat$dpisofirme)
