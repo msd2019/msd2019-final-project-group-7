@@ -218,34 +218,34 @@ individual_dat$S_seguropopular[is.na(individual_dat$S_seguropopular)]<- 0
 # function for individual data set
 model_3_i <- function(dependent,cluster=T) {
   # removes entries with na values
-   updated_data<-individual_dat%>%filter(!is.na(dependent) & !is.na(individual_dat$idcluster))
+   data_updated<-individual_dat%>%filter(!is.na(dependent) & !is.na(individual_dat$idcluster))
    # control variables
-   x1<- updated_data$S_HHpeople
-   x2<-updated_data$S_rooms
-   x3<-updated_data$S_age
-   x4<-updated_data$S_gender
-   x5<-updated_data$S_childma
-   x6<-updated_data$S_childmaage
-   x7<-updated_data$S_childmaeduc 
-   x8<-updated_data$S_childpa
-   x9<-updated_data$S_childpaage 
-   x10<-updated_data$S_childpaeduc
-   x11<-updated_data$S_waterland
-   x12<-updated_data$S_waterhouse 
-   x13<-updated_data$S_electricity
-   x14<-updated_data$S_hasanimals
-   x15<-updated_data$S_animalsinside
-   x16<-updated_data$S_garbage
-   x17<-updated_data$S_washhands
-   x18<-updated_data$S_cashtransfers
-   x19<-updated_data$S_milkprogram
-   x20<-updated_data$S_foodprogram
-   x21<-updated_data$S_seguropopular
-   x22<- updated_data$dpisofirme
+   x1<- data_updated$S_HHpeople
+   x2<-data_updated$S_rooms
+   x3<-data_updated$S_age
+   x4<-data_updated$S_gender
+   x5<-data_updated$S_childma
+   x6<-data_updated$S_childmaage
+   x7<-data_updated$S_childmaeduc 
+   x8<-data_updated$S_childpa
+   x9<-data_updated$S_childpaage 
+   x10<-data_updated$S_childpaeduc
+   x11<-data_updated$S_waterland
+   x12<-data_updated$S_waterhouse 
+   x13<-data_updated$S_electricity
+   x14<-data_updated$S_hasanimals
+   x15<-data_updated$S_animalsinside
+   x16<-data_updated$S_garbage
+   x17<-data_updated$S_washhands
+   x18<-data_updated$S_cashtransfers
+   x19<-data_updated$S_milkprogram
+   x20<-data_updated$S_foodprogram
+   x21<-data_updated$S_seguropopular
+   x22<- data_updated$dpisofirme
    updated_dependent<- dependent[!is.na(dependent)& !is.na(individual_dat$idcluster)]
   if(cluster==T)
   {
-    return(tidy(lm_robust(updated_dependent ~ x22 + x1 + x2 + x3  + x4+ x5+ x6+ x7+ x8+ x9+ x10+ x11+ x12+ x13+ x14+ x15+ x16+ x17+x18+x19+x20+x21+x22,updated_data,clusters=idcluster)))
+    return(tidy(lm_robust(updated_dependent ~ x22 + x1 + x2 + x3  + x4+ x5+ x6+ x7+ x8+ x9+ x10+ x11+ x12+ x13+ x14+ x15+ x16+ x17+x18+x19+x20+x21+x22,data_updated,clusters=idcluster)))
   }else{
     return(tidy(lm_robust(updated_dependent ~ x22 + x1 + x2 + x3  + x4+ x5+ x6+ x7+ x8+ x9+ x10+ x11+ x12+ x13+ x14+ x15+ x16+ x17+x18+x19+x20+x21+x22,data_updated)))
   }
