@@ -449,7 +449,7 @@ mean(as.numeric(precision))
 mean(as.numeric(fpr))
 ```
 
-```{r}
+```{r visuals}
 supp.labs <- c("No Pisofirme", "Pisofirme")
 names(supp.labs) <- c(0, 1)
 ggplot(household_dat)+geom_histogram(aes(x=C_waterland))+facet_grid(~dpisofirme,labeller=labeller(dpisofirme=supp.labs))
