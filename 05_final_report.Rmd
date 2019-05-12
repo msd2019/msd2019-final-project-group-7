@@ -346,6 +346,10 @@ Table_4 <- Model %>% filter(var == "share_cement_floors" | var == "kitchen" | va
 Table_5 <- Model %>% filter(var == "parasite" | var == "diarrhea" | var == "anemia" | var == "MacArthur" | var == "Peabody" | var == "height" | var == "weight") %>% select(var, control_group_mean, control_group_sd, coeff_1,sce_1,coef_mean_1, coeff_2,sce_2,coef_mean_2, coeff_3,sce_3,coef_mean_3) %>% rename("Dependent" = var)
 
 Table_6 <- Model %>% filter(var == "Sat_floor" | var == "Sat_house" | var == "Sat_life" | var == "Depression" | var == "Stress") %>% select(var, control_group_mean, control_group_sd, coeff_1,sce_1,coef_mean_1, coeff_2,sce_2,coef_mean_2, coeff_3,sce_3,coef_mean_3) %>% rename( "Dependent" = var)
+
+Table_4
+Table_5
+Table_6
 ```
 
 Compare Clustered and Non Clustered SE:
