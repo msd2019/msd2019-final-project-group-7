@@ -28,8 +28,8 @@ knitr::opts_chunk$set(echo = TRUE)
 Read in the two data files used for replication of the main results. The houshold dataset has information at the houshold level and includes data from both the 2000 Mexican Census and the 2005 Survey. The individual dataset has information at the individual level and includes data from the 2005 Survey.
 
 ```{r read-data}
-household_dat <- read_dta(file = "PisoFirme_AEJPol-20070024_household.dta")
-individual_dat <- read_dta(file = "PisoFirme_AEJPol-20070024_individual.dta")
+household_dat <- read_dta(file = "data/PisoFirme_AEJPol-20070024_household.dta")
+individual_dat <- read_dta(file = "data/PisoFirme_AEJPol-20070024_individual.dta")
 ```
 
 Divides the data into treatment and control groups.
