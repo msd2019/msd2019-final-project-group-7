@@ -57,7 +57,7 @@ model_1_i <- function(dependent,cluster=T) {
 # function for household data set
  model_1_hh <- function(dependent,cluster=T) {
   data_updated<-household_dat%>%filter(!is.na(dependent) & !is.na(household_dat$idcluster))
-dependent_updated <- dependent[!is.na(dependent)& !is.na(household_dat_dat$idcluster)]
+dependent_updated <- dependent[!is.na(dependent)& !is.na(household_dat$idcluster)]
   if(cluster==T){
   return(tidy(lm_robust(dependent_updated ~ dpisofirme,data_updated,clusters=idcluster)))}
   else{
@@ -313,7 +313,7 @@ Here we have graphical representations of the regression coefficients for each d
 
 ```{r}
 #create a df so we can facet_grid by model type 
-graphing<-rbind(Model_1%>%rename(coeff=coeff_1)%>%mutate(model_type=1)%>%select(coeff,sce,var,model_type),Model_2%>%rename(coeff=coeff_2)%>%mutate(model_type=2)%>%select(coeff,sce,var,model_type),Model_3%>%rename(coeff=coeff_3)%>%mutate(model_type=3)%>%select(coeff,sce,var,model_type))
+graphing<-rbind(Model_1%>%mutate(model_type=1)%>%select(coeff_1,sce_1,var,model_type)%>%rename(coeff=coeff_1,sce=sce_1),Model_2%>%mutate(model_type=2)%>%select(coeff_2,sce_2,var,model_type)%>%rename(coeff=coeff_2,sce=sce_2),Model_3%>%mutate(model_type=3)%>%select(coeff_3,sce_3,var,model_type)%>%rename(coeff=coeff_3,sce=sce_3))
 #visualizations of coefficients for each model, grouped by dependent variable type (effectiveness, adult happiness, child health)
 #corresponds to tables 4-6 
 
@@ -420,6 +420,8 @@ for (f in 1:num_folds) {
 mean(as.numeric(accuracy))
 mean(as.numeric(recall))
 mean(as.numeric(precision))
+topterm
+bottomterm
 ```
 Visuals comparing some dependent variables with and without Dpisofirme 
 
