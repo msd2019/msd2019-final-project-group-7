@@ -295,12 +295,12 @@ Calculates control group means and standard deviations, which are used as to und
 # function to calculate control mean
 control_mean <- function(dependent) {
   updated_dependent<- dependent[!is.na(dependent)]
-  return(mean(updated_dependent))
+  return(mean(updated_dependent,na.rm=T))
 }
 # function to calculate control standard deviation
 control_sd <- function(dependent) {
   updated_dependent<- dependent[!is.na(dependent)]
-  return(sd(updated_dependent))
+  return(sd(updated_dependent,na.rm=T))
 }
 # computes control mean for each dependent variable
 control_mean <- c(control_mean(household_control$S_shcementfloor), control_mean(household_control$S_cementfloorkit), control_mean(household_control$S_cementfloordin), control_mean(household_control$S_cementfloorbat),control_mean(household_control$S_cementfloorbed),control_mean(individual_control$S_parcount),control_mean(individual_control$S_diarrhea),control_mean(individual_control$S_anemia),control_mean(individual_control$S_mccdts),control_mean(individual_control$S_pbdypct),control_mean(individual_control$S_haz),control_mean(individual_control$S_whz),control_mean(household_control$S_satisfloor),control_mean(household_control$S_satishouse),control_mean(household_control$S_satislife),control_mean(household_control$S_cesds),control_mean(household_control$S_pss))
@@ -345,7 +345,7 @@ Table_4 <- Model %>% filter(var == "share_cement_floors" | var == "kitchen" | va
 
 Table_5 <- Model %>% filter(var == "parasite" | var == "diarrhea" | var == "anemia" | var == "MacArthur" | var == "Peabody" | var == "height" | var == "weight") %>% select(var, control_group_mean, control_group_sd, coeff_1,sce_1,coef_mean_1, coeff_2,sce_2,coef_mean_2, coeff_3,sce_3,coef_mean_3) %>% rename("Dependent" = var)
 
-Table_6 <- Model %>% filter(var == "Sat_floor" | var == "Sat_House" | var == "Sat_life" | var == "Depression" | var == "Stress") %>% select(var, control_group_mean, control_group_sd, coeff_1,sce_1,coef_mean_1, coeff_2,sce_2,coef_mean_2, coeff_3,sce_3,coef_mean_3) %>% rename( "Dependent" = var)
+Table_6 <- Model %>% filter(var == "Sat_floor" | var == "Sat_house" | var == "Sat_life" | var == "Depression" | var == "Stress") %>% select(var, control_group_mean, control_group_sd, coeff_1,sce_1,coef_mean_1, coeff_2,sce_2,coef_mean_2, coeff_3,sce_3,coef_mean_3) %>% rename( "Dependent" = var)
 ```
 
 Compare Clustered and Non Clustered SE:
@@ -562,46 +562,62 @@ model_3_hh_rsq <- function(dependent) {
 }
 ```
 
-```{r-sq-tables}
+```{r r-sq-tables}
 # r square coefficients for table 4
-T4_rsq <- data.frame(dependent = c("share_cement_floors", "kitchen", "dining_room", "bedroom", "bathroom"))
+T4_rsq <- data.frame(Dependent = c("share_cement_floors", "kitchen", "dining_room", "bedroom", "bathroom"))
 T4_rsq$data <- list(c(household_dat$S_shcementfloor), c(household_dat$S_cementfloorkit), c(household_dat$S_cementfloordin), c(household_dat$S_cementfloorbed), c(household_dat$S_cementfloorbat))
-T4_rsq <- T4_rsq %>% mutate(r_sq_m1 = map(data, model_1_hh_rsq), r_sq_m2 = map(data, model_2_hh_sq), r_sq_m3 = map(data, model_3_hh_rsq)) %>% select(dependent, r_sq_m1, r_sq_m2, r_sq_m3)
+T4_rsq <- T4_rsq %>% mutate(r_sq_m1 = unlist(map(data, model_1_hh_rsq)), r_sq_m2 = unlist(map(data, model_2_hh_sq)), r_sq_m3 = unlist(map(data, model_3_hh_rsq))) %>% select(Dependent, r_sq_m1, r_sq_m2, r_sq_m3)
 # r squared coefficients for table 5
-T5_rsq <- data.frame(dependent = c("parasite", "diarrhea", "anemia", "MacArthur", "Peabody", "height", "weight"))
+T5_rsq <- data.frame(Dependent = c("parasite", "diarrhea", "anemia", "MacArthur", "Peabody", "height", "weight"))
 T5_rsq$data <- list(c(individual_dat$S_parcount), c(individual_dat$S_diarrhea), c(individual_dat$S_anemia), c(individual_dat$S_mccdts), c(individual_dat$S_pbdypct), c(individual_dat$S_haz), c(individual_dat$S_whz))
-T5_rsq <- T5_rsq %>% mutate(r_sq_m1 = map(data, model_1_i_rsq), r_sq_m2 = map(data, model_2_i_rsq), r_sq_m3 = map(data, model_3_i_rsq)) %>% select(dependent, r_sq_m1, r_sq_m2, r_sq_m3)
+T5_rsq <- T5_rsq %>% mutate(r_sq_m1 = unlist(map(data, model_1_i_rsq)), r_sq_m2 = unlist(map(data, model_2_i_rsq)), r_sq_m3 = unlist(map(data, model_3_i_rsq))) %>% select(Dependent, r_sq_m1, r_sq_m2, r_sq_m3)
 # r squared coefficients for table 6
-T6_rsq <- data.frame(dependent = c("sat_floor", "sat_house", "sat_life", "depression", "stress"))
+T6_rsq <- data.frame(Dependent = c("sat_floor", "sat_house", "sat_life", "depression", "stress"))
 T6_rsq$data <- list(c(household_dat$S_satisfloor), c(household_dat$S_satishouse), c(household_dat$S_satislife), c(household_dat$S_cesds), c(household_dat$S_pss))
-T6_rsq <- T6_rsq %>% mutate(r_sq_m1 = map(data, model_1_hh_rsq), r_sq_m2 = map(data, model_2_hh_sq), r_sq_m3 = map(data, model_3_hh_rsq)) %>% select(dependent, r_sq_m1, r_sq_m2, r_sq_m3)
+T6_rsq <- T6_rsq %>% mutate(r_sq_m1 = unlist(map(data, model_1_hh_rsq)), r_sq_m2 = unlist(map(data, model_2_hh_sq)), r_sq_m3 = unlist(map(data, model_3_hh_rsq))) %>% select(Dependent, r_sq_m1, r_sq_m2, r_sq_m3)
+
+
 ```
 # R Squared Plots
 Here, we try to see if there is any trend between the coefficients for the dependents for each model and the r squared values.
 
 ```{r r-sq-plots}
+
 T4_2 <- Table_4 %>% full_join(T4_rsq, by = "Dependent")
 T5_2 <- Table_5 %>% full_join(T5_rsq, by = "Dependent")
 T6_2 <- Table_6 %>% full_join(T6_rsq, by = "Dependent")
 T_Tot <- T4_2 %>% full_join(T5_2) %>% full_join(T6_2)
-ggplot(data = T_Tot) + geom_point(mapping = aes(x = Model_1, y = r_sq_m1)) + xlab("Model 1 Coefficients") + ylab("Model 1 R Squared") + ggtitle("Model 1")
-ggplot(data = T_Tot) + geom_point(mapping = aes(x = Model_2, y = r_sq_m2)) + xlab("Model 2 Coefficients") + ylab("Model 2 R Squared") + ggtitle("Model 2")
-ggplot(data = T_Tot) + geom_point(mapping = aes(x = Model_3, y = r_sq_m3)) + xlab("Model 3 Coefficients") + ylab("Model 3 R Squared") + ggtitle("Model 3")
+ggplot(data = T_Tot) + geom_point(aes(x = coeff_1, y = r_sq_m1)) + xlab("Model 1 Coefficients") + ylab("Model 1 R Squared") + ggtitle("Model 1")
+ggplot(data = T_Tot) + geom_point(mapping = aes(x = coeff_2, y = r_sq_m2)) + xlab("Model 2 Coefficients") + ylab("Model 2 R Squared") + ggtitle("Model 2")
+ggplot(data = T_Tot) + geom_point(mapping = aes(x = coeff_3, y = r_sq_m3)) + xlab("Model 3 Coefficients") + ylab("Model 3 R Squared") + ggtitle("Model 3")
 ```
+```{r r-sq-plots-no-outliers}
+# here we remove outliers
+T_Tot2 <- T_Tot %>% filter(coeff_1 > -1) %>% filter(coeff_1 < 1) %>% filter(coeff_2 > -1) %>% filter(coeff_2 < 1) %>% filter(coeff_3 > -1) %>% filter(coeff_3 < 1)
+
+ggplot(data = T_Tot2) + geom_point(mapping = aes(x = coeff_1, y = r_sq_m1)) + xlab("Model 1 Coefficients") + ylab("Model 1 R Squared") + ggtitle("Model 1 No Outliers")
+ggplot(data = T_Tot2) + geom_point(mapping = aes(x = coeff_2, y = r_sq_m2)) + xlab("Model 2 Coefficients") + ylab("Model 2 R Squared") + ggtitle("Model 2 No Outliers")
+ggplot(data = T_Tot2) + geom_point(mapping = aes(x = coeff_3, y = r_sq_m3)) + xlab("Model 3 Coefficients") + ylab("Model 3 R Squared") + ggtitle("Model 3 No Outliers")
+```
+
+
 Rsquared values for each table, separated by model using standard error as error bars (not clustered)
 ```{r}
 T6_rsq$r_sq_m1<-as.numeric(T6_rsq$r_sq_m1)
-plot_r_6<-T6_rsq%>%gather("model_type","coeff",2:4)%>%mutate(sc=graphing[c(13:17,30:34,47:51),]$sc)%>%mutate(coeff=as.numeric(coeff))
+plot_r_6<-T6_rsq%>%gather("model_type","coeff",2:4)%>%mutate(sce=graphing[c(13:17,30:34,47:51),]$sce)%>%mutate(coeff=as.numeric(coeff))
 T5_rsq$r_sq_m1<-as.numeric(T5_rsq$r_sq_m1)
-plot_r_5<-T5_rsq%>%gather("model_type","coeff",2:4)%>%mutate(sc=graphing[c(6:12,23:29,40:46),]$sc)%>%mutate(coeff=as.numeric(coeff))
+plot_r_5<-T5_rsq%>%gather("model_type","coeff",2:4)%>%mutate(sce=graphing[c(6:12,23:29,40:46),]$sce)%>%mutate(coeff=as.numeric(coeff))
+
+
 
 T4_rsq$r_sq_m1<-as.numeric(T4_rsq$r_sq_m1)
-plot_r_4<-T4_rsq%>%gather("model_type","coeff",2:4)%>%mutate(sc=graphing[c(1:5,18:22,35:39),]$sc)%>%mutate(coeff=as.numeric(coeff))
-ggplot(plot_r_4,aes(x=dependent,y=coeff))+geom_pointrange(aes(ymin=coeff-sc,ymax=coeff+sc))+scale_x_discrete(labels=c(variables[1:5]))+facet_grid(~model_type)+labs(y="R_sq",title="Table 4 R_sq by Model")+theme(axis.text = element_text(size=4,face="bold"))
-ggplot(plot_r_5,aes(x=dependent,y=coeff))+geom_pointrange(aes(ymin=coeff-sc,ymax=coeff+sc))+scale_x_discrete(labels=c(variables[13:17]))+facet_grid(~model_type)+labs(y="R_sq",title="Table 5 R_sq by Model")+theme(axis.text = element_text(size=4,face="bold"))
+plot_r_4<-T4_rsq%>%gather("model_type","coeff",2:4)%>%mutate(sce=graphing[c(1:5,18:22,35:39),]$sce)%>%mutate(coeff=as.numeric(coeff))
+
+ggplot(plot_r_4,aes(x=Dependent,y=coeff))+geom_pointrange(aes(ymin=coeff-sce,ymax=coeff+sce))+scale_x_discrete(labels=c(variables[1:5]))+facet_grid(~model_type)+labs(y="R_sq",title="Table 4 R_sq by Model")+theme(axis.text = element_text(size=4,face="bold"))
+ggplot(plot_r_5,aes(x=Dependent,y=coeff))+geom_pointrange(aes(ymin=coeff-sce,ymax=coeff+sce))+scale_x_discrete(labels=c(variables[13:17]))+facet_grid(~model_type)+labs(y="R_sq",title="Table 5 R_sq by Model")+theme(axis.text = element_text(size=4,face="bold"))
 
 
-ggplot(plot_r_6,aes(x=dependent,y=coeff))+geom_pointrange(aes(ymin=coeff-sc,ymax=coeff+sc))+scale_x_discrete(labels=c(variables[13:17]))+facet_grid(~model_type)+labs(y=" R_sq",title="Table 6 R_sq by Model")+theme(axis.text = element_text(size=4,face="bold"))
+ggplot(plot_r_6,aes(x=Dependent,y=coeff))+geom_pointrange(aes(ymin=coeff-sce,ymax=coeff+sce))+scale_x_discrete(labels=c(variables[13:17]))+facet_grid(~model_type)+labs(y=" R_sq",title="Table 6 R_sq by Model")+theme(axis.text = element_text(size=4,face="bold"))
 
 ```
 
