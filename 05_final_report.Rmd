@@ -46,8 +46,8 @@ Here, we fit linear models, varying the dependent variable and extracting the co
 ```{r model-1}
 # function for individual data set
 model_1_i <- function(dependent,cluster=T) {
-  data_updated<-individual_dat[!is.na(dependent),]
-  dependent_updated <- dependent[!is.na(dependent)]
+  data_updated<-individual_dat%>%filter(!is.na(dependent) & !is.na(individual_dat$idcluster))
+  dependent_updated <- dependent[!is.na(dependent)& !is.na(individual_dat$idcluster)]
   if(cluster==T){
   return(tidy(lm_robust(dependent_updated ~ dpisofirme,data_updated,clusters=idcluster)))}
   else{
@@ -56,8 +56,8 @@ model_1_i <- function(dependent,cluster=T) {
 }
 # function for household data set
  model_1_hh <- function(dependent,cluster=T) {
-  data_updated<-household_dat[!is.na(dependent),]
-  dependent_updated <- dependent[!is.na(dependent)]
+  data_updated<-household_dat%>%filter(!is.na(dependent) & !is.na(household_dat$idcluster))
+dependent_updated <- dependent[!is.na(dependent)& !is.na(household_dat_dat$idcluster)]
   if(cluster==T){
   return(tidy(lm_robust(dependent_updated ~ dpisofirme,data_updated,clusters=idcluster)))}
   else{
@@ -345,60 +345,26 @@ Table_4 <- Model %>% filter(var == "share_cement_floors" | var == "kitchen" | va
 
 Table_5 <- Model %>% filter(var == "parasite" | var == "diarrhea" | var == "anemia" | var == "MacArthur" | var == "Peabody" | var == "height" | var == "weight") %>% select(var, control_group_mean, control_group_sd, coeff_1,sce_1,coef_mean_1, coeff_2,sce_2,coef_mean_2, coeff_3,sce_3,coef_mean_3) %>% rename("Dependent" = var)
 
-Table_6 <- Model %>% filter(var == "sat_floor" | var == "sat_House" | var == "sat_life" | var == "depression" | var == "stress") %>% select(var, control_group_mean, control_group_sd, coeff_1,sce_1,coef_mean_1, coeff_2,sce_2,coef_mean_2, coeff_3,sce_3,coef_mean_3) %>% rename( "Dependent" = var)
+Table_6 <- Model %>% filter(var == "Sat_floor" | var == "Sat_House" | var == "Sat_life" | var == "Depression" | var == "Stress") %>% select(var, control_group_mean, control_group_sd, coeff_1,sce_1,coef_mean_1, coeff_2,sce_2,coef_mean_2, coeff_3,sce_3,coef_mean_3) %>% rename( "Dependent" = var)
 ```
 
 Compare Clustered and Non Clustered SE:
 ```{r}
 
-##make some sort of barplot i cant think rn
-#errors<-Model%>%select(var,sce_1,se_1,sce_2,se_2,sce_3,se_3)
-#plottingerror<-rbind(errors%>%select(sce_1,var)%>%spread(var,sce_1),errors%>%select(se_1,var)%>%spread(var,se_1),errors%>%select(sce_2,var)%>%spread(var,sce_2),errors%>%select(se_2,var)%>%spread(var,se_2),errors%>%select(sce_3,var)%>%spread(var,sce_3),errors%>%select(se_3,var)%>%spread(var,se_3))
+errors<-Model%>%select(var,sce_1,se_1,sce_2,se_2,sce_3,se_3)
+errors<-errors%>%gather("type","error",2:7)
+tb6_err<-errors%>%filter(var == "Sat_floor" | var == "Sat_House" | var == "Sat_life" | var == "Depression" | var == "Stress")
+tb5_err<-errors%>% filter(var == "parasite" | var == "diarrhea" | var == "anemia" | var == "MacArthur" | var == "Peabody" | var == "height" | var == "weight")
+tb4_err<-errors%>% filter(var == "share_cement_floors" | var == "kitchen" | var == "dining_room" | var == "bathroom" | var == "bedroom")
 
-#ggplot(errors)+geom_bar(sce_1,se_1)+facet_grid(~var)
+ggplot(tb6_err)+geom_col(aes(x=var,y=error))+facet_grid(~type)+ ggtitle("Table 6 Clustered vs Non-Clustered Standard Error Models 1-3")+ theme(axis.text.x=element_blank(),axis.ticks.x=element_blank())+xlab("Dependent Variables")
+ggplot(tb5_err)+geom_col(aes(x=var,y=error))+facet_grid(~type)+ ggtitle("Table 5 Clustered vs Non-Clustered Standard Error Models 1-3")+ theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())+xlab("Dependent Variables")
+ggplot(tb4_err)+geom_col(aes(x=var,y=error))+facet_grid(~type)+ ggtitle("Table 4 Clustered vs Non-Clustered Standard Error Models 1-3")+ theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())+xlab("Dependent Variables")
+
 
 ```
-
-
-
-# Logistic Regression
-Here, we try to see if we can predict whether or not a house recieved the treatment based on the pre-treatment control variables. If we can predict whether or not the house received the treatment, we would have evidence to suggest that the treatment and control groups are not relatively equal, as claimed in the paper.
-```{r logistic-regression}
-household_dat$dpisofirme <- factor(household_dat$dpisofirme)
-# selects out control variables
-controlled_household <- household_dat %>% select(S_HHpeople, S_headage, S_spouseage, S_headeduc, S_spouseeduc, S_dem1, S_dem2, S_dem3, S_dem4, S_dem5, S_dem6, S_dem7, S_dem8, S_waterland, S_waterhouse, S_electricity, S_hasanimals, S_animalsinside, S_garbage, S_washhands, S_cashtransfers, S_milkprogram, S_foodprogram, S_seguropopular)
-num_rows <- nrow(controlled_household)
-frac_train <- 0.8
-num_train <- floor(num_rows * frac_train)
-ndx <- sample(1:num_rows, num_train, replace=F)
-data_train <- controlled_household[ndx, ]
-all_train <- household_dat[ndx, ]
-data_test <- controlled_household[-ndx, ]
-all_test <- household_dat[-ndx, ]
-model <- glm(all_train$dpisofirme ~., data=data_train, family = "binomial")
-df <- data.frame(actual = all_test$dpisofirme, log_odds = predict(model, data_test)) %>% mutate(pred = ifelse(log_odds > 0, '1', '0'))
-table(actual = df$actual, predicted = df$pred)
-# accuracy: fraction of correct classifications
-df %>%summarize(acc = mean(pred == actual))
-# precision: fraction of positive predictions that are actually true
-df %>% filter(pred == '1') %>% summarize(prec = mean(actual == '1'))
-# recall: fraction of true examples that we predicted to be positive
-# aka true positive rate, sensitivity
-df %>% filter(actual == '1') %>% summarize(recall = mean(pred == '1'))
-# false positive rate: fraction of false examples that we predicted to be positive
-df %>% filter(actual == '0') %>% summarize(fpr = mean(pred == '1'))
-#probs <- data.frame(predict(model,data_test, type="raw"))
-#plot_data <- data_test
-#plot_data$probs <- predict(model, data_test, type="response")
-#ggplot(plot_data, aes(x = probs)) + geom_histogram(binwidth = 0.01) + xlab('Predicted probability of Treatment') + ylab('Number of examples')
-# plot calibration
-#data.frame(predicted=plot_data$probs, actual=all_test$dpisofirme) %>% group_by(predicted=round(predicted*10)/10) %>% summarize(num=n(), actual=mean(actual == "1")) %>% ggplot(data=., aes(x=predicted, y=actual, size=num)) + geom_point() + geom_abline(linetype=2) + scale_x_continuous(labels=percent, lim=c(0,1)) + scale_y_continuous(labels=percent, lim=c(0,1)) + xlab('Predicted probability of Treatment') + ylab('Percent that are actually Treatment')
-#pred <- prediction(plot_data$probs, yTest)
-#perf_lr <- performance(pred, measure='tpr', x.measure='fpr')
-#plot(perf_lr)
-#performance(pred, 'auc')
-```
-
 
 # Logistic Regression
 Here, we try to see if we can predict whether or not a house recieved the treatment based on the pre-treatment  variables. If we can predict whether or not the house received the treatment, we would have evidence to suggest that the treatment and control groups are not relatively equal, as claimed in the paper.
@@ -422,7 +388,6 @@ accuracy<-c()
 #coefficients 
 topterm<-c()
 bottomterm<-c()
-fpr<-c()
 recall<-c()
 precision<-c()
 counter<-1
@@ -432,7 +397,7 @@ for (f in 1:num_folds) {
     model <- glm(training$dpisofirme ~., data=training, family = "binomial")
     # evaluate on the validation data
     testing <- filter(classify, fold == f)
-    df <- data.frame(actual = testing$dpisofirme, log_odds = log_odds    predict(model,testing)) %>% mutate(pred = ifelse(log_odds > 0, '1', '0'))
+    df <- data.frame(actual = testing$dpisofirme, log_odds= predict(model,testing)) %>% mutate(pred = ifelse(log_odds > 0, '1', '0'))
     
 # accuracy: correct/total
     acc<-df %>%summarize(acc = mean(pred == actual,na.rm=T))
@@ -443,9 +408,7 @@ for (f in 1:num_folds) {
     rec<-df %>% filter(actual == '1') %>% summarize(recall = mean(pred == '1',na.rm=T))
     #recall: true positives/all actual positives 
     recall[counter]<-rec[1]
-    #false positive rate 
-    fp<-df %>% filter(actual == '0') %>% summarize(fpr = mean(pred == '1',na.rm=T))
-    fpr[counter]<-fp[1]
+  
     modeldf<-tidy(model)
     top<-modeldf%>%arrange(desc(estimate))%>%select(term)
     bottom<-modeldf%>%arrange(estimate)%>%select(term)
@@ -457,7 +420,6 @@ for (f in 1:num_folds) {
 mean(as.numeric(accuracy))
 mean(as.numeric(recall))
 mean(as.numeric(precision))
-mean(as.numeric(fpr))
 ```
 Visuals comparing some dependent variables with and without Dpisofirme 
 
@@ -624,15 +586,6 @@ ggplot(data = T_Tot) + geom_point(mapping = aes(x = Model_1, y = r_sq_m1)) + xla
 ggplot(data = T_Tot) + geom_point(mapping = aes(x = Model_2, y = r_sq_m2)) + xlab("Model 2 Coefficients") + ylab("Model 2 R Squared") + ggtitle("Model 2")
 ggplot(data = T_Tot) + geom_point(mapping = aes(x = Model_3, y = r_sq_m3)) + xlab("Model 3 Coefficients") + ylab("Model 3 R Squared") + ggtitle("Model 3")
 ```
-```{r r-sq-plots-no-outliers}
-# here we remove outliers
-T_Tot2 <- T_Tot %>% filter(Model_1 > -1) %>% filter(Model_1 < 1) %>% filter(Model_2 > -1) %>% filter(Model_2 < 1) %>% filter(Model_3 > -1) %>% filter(Model_3 < 1)
-
-ggplot(data = T_Tot2) + geom_point(mapping = aes(x = Model_1, y = r_sq_m1)) + xlab("Model 1 Coefficients") + ylab("Model 1 R Squared") + ggtitle("Model 1 No Outliers")
-ggplot(data = T_Tot2) + geom_point(mapping = aes(x = Model_2, y = r_sq_m2)) + xlab("Model 2 Coefficients") + ylab("Model 2 R Squared") + ggtitle("Model 2 No Outliers")
-ggplot(data = T_Tot2) + geom_point(mapping = aes(x = Model_3, y = r_sq_m3)) + xlab("Model 3 Coefficients") + ylab("Model 3 R Squared") + ggtitle("Model 3 No Outliers")
-```
-
 Rsquared values for each table, separated by model using standard error as error bars (not clustered)
 ```{r}
 T6_rsq$r_sq_m1<-as.numeric(T6_rsq$r_sq_m1)
