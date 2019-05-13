@@ -7,6 +7,7 @@ output:
   pdf_document:
     toc: yes
     toc_depth: 3
+indent: true
 ---
 
 
@@ -22,6 +23,14 @@ library(estimatr)
 theme_set(theme_bw())
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+# Background
+
+  For our final project, we chose to reproduce and extend the main results in the paper “Housing, Health, and Happiness” published in the American Economic Journal: Economic Policy in 2009 by Matias D.Cattaneo, Sebastian Galiani, Paul J. Gertler, Sebastian Martinez, and Rocio Titiunik. In their paper, they explore the impact of Piso Firme, a program in Mexico that replaced dirt floors with cement floor, on child health and adult happiness. They found significant improvements in child health in homes affected by Piso Firme, as measured by parasite counts, diarrhea, anemia, the MacArthur Communicative Development Test score, the Picture Peabody Vocabulary Test percentile score, height, and weight. Furthermore, they also found significant improvements in adult happiness as measured by satisfaction with floor quality, satisfaction with house quality, satisfaction with quality of life, depression scale, and perceived stress scale. The goal of Piso Firme is to provide better living standards to people in Mexico through cheaper means in relation to other social programs. This paper showed that Piso Firme does meet its intended goal. 
+
+# Data
+
+  The data for this paper comes from surveys of control and treatment groups that the team conducted with the Mexican National Institute of Public Health in 2005 as well as the 2000 Mexican census, vital statistic mortality files, and the 1994-2000 household surveys. Since this was a natural experiment and the assignment of the homes into treatment or control groups was not done experimentally, the authors had to give special care to make sure that the treatment and control groups did not differ besides with regards to whether or not they received the treatment. The authors noticed that there is an urban area that is shared between two states, one of which implemented Piso Firme before the study was conducted and the other which did not. Since this was one urban space, however, the demographic and socioeconomic status of its residents seemed to be relatively uniform regardless of which state the individual home belonged to. The researchers took advantage of this characteristic to conduct a natural experiment, in which the homes in the urban space that received Piso Firme were part of the treatment group, and those that did not were part of the control. In order to further confirm the pre-treatment health, socioeconomic status, and demographic makeup of the groups, the researchers specifically looked at mean difference between numerous variables such as: average number of rooms per household, proportion of houses with no gas heater, average overcrowding index, and age. The clustered standard errors were also calculated at the census block level. Using these values they tested for significance in difference between the variables. They found that very few of these variables differed significantly, and confirmed that there were in fact no significant differences between the groups before the treatment.
 
 # Import Data
 
@@ -40,6 +49,11 @@ household_control <- household_dat %>% filter(dpisofirme == 0)
 individual_treatment <- individual_dat %>% filter(dpisofirme == 1)
 individual_control <- individual_dat %>% filter(dpisofirme == 0)
 ```
+
+# Reproduction:
+
+The main part of the paper, as mentioned earlier, was to show that Piso Firme had significant impacts on children’s health and on adult happiness as measured by a few specific variables present in the data set. In order to do this, the researchers conducted linear regressions with three different models, one where the only independent variable was a dummy variable indicating whether or not the house received the treatment, another where the independent variable also included age, demographic, and health habits, and a third that also included social programs. The dependent variables varied between all of the indicator variables for child health and adult happiness. The researchers also included a table, Table 4, where they conducted this same regression model, but the dependent variables indicated the share of rooms with cement floors, and dummy variables indicating whether or not there is a cement floor in the kitchen, dining room, bathroom, and bedroom. The point of this was to show that Piso Firme did in fact install cement floors, since those receiving the treatment did not have to accept it and the researchers conducted an intent to treat analysis. They found that Piso Firme did lead to significant increases in all of these measures. For all of the regressions, the researchers used three models. The first had no controls, the second had age, demographic, and health-habit controls, and the third had age, demographic, health-habit, and public social programs controls. It is important to note that here, the researchers use regression to determine statistical significance. For each dependent variable, they report its coefficient as well as its clustered standard error at census-block level, which was the measure used to determine significance. Finally, they also reported one hundred times the coefficient divided by the control mean, a measure roughly representing the percentage change in the measure of the dependent variable as a result of the mean. In Table 5, which showed children’s health, they found significant results for all variables except height, weight, and Picture Peabody Vocabulary Test for model 1. In Table 6, which shows adult happiness, they found significant results for all variables. Thus, overall, the researchers were able to show, since the control and treatment groups appeared to be similar besides the treatment, that Piso Firme does improve child health and adult happiness in a significant way.
+
 
 # Model 1: no controls
 Here, we fit linear models, varying the dependent variable and extracting the correlation coefficient as well as both the clustered and non-clustered standard errors.
@@ -352,7 +366,11 @@ Table_5
 Table_6
 ```
 
-Compare Clustered and Non Clustered SE:
+# Compare Clustered and Non Clustered SE:
+
+Housing and Happiness made use of clustered standard errors, clustering at the census block level. Miller explains the need for clustering by region, “Then model errors for individuals in the same region may be correlated, while model errors for individuals in different regions are assumed to be uncorrelated” (Cameron and Miller 2). He also notes that a failure to control for any cluster correlations would result in misleadingly small standard errors. As part of our extension we provide both the clustered standard error and non-clustered standard error, which as Miller predicted was much smaller than the clustered standard error. This indicates that there is a correlation among individuals at the census block level, and thus Cattaneo et al’s use of standard clustered error is justified. Reporting a misleadingly small standard error would have made the regression performance appear better than it is.  It is important to note that we obtained the same clustered standard errors at census block level as determined in the paper, and thus found statistical significance at the same levels for the same dependent variables as in the paper.
+
+
 ```{r}
 
 errors<-Model%>%select(var,sce_1,se_1,sce_2,se_2,sce_3,se_3)
@@ -370,8 +388,14 @@ ggplot(tb4_err)+geom_col(aes(x=var,y=error))+facet_grid(~type)+ ggtitle("Table 4
 
 ```
 
+# Extension: Logistic Regression
+
+Housing and Happiness by Cattaneo et al is an example of a natural experiment. In this case the government decided to give the treatment to one town and not another although they are geographically close and socio-economically similar. Although this was not necessarily a naturally random experiment (households were not randomly selected to retrieve the treatment) but instead the towns differ only by an “administrative split” (different states). Additionally, they also used a smallest distance algorithm to only select the control census blocks that closest match the treatment census blocks (using pre Piso Firme 2000 census data). In order to extend our analysis we wanted to use classification see how similar/dissimilar the control census blocks and treatment census blocks were. We used a logistic regression model in order to predict whether or not a census block received Piso Firme, with features from the 2000 census data. In theory, if the two towns were as similar as Cattaneo et al. found in their extensive analysis then we would expect to see an accuracy of about 50% (same as random selecting a census block to receive treatment). 
+Before applying the logistic regression we made sure that every census block was unique because we found that every data entry that had the same census block also contained the exact same 2000 census information, so if we kept all of the raw data for the analysis it gave a false sense of high accuracy.  Since this lowered the sample size for the training and testing set we also implemented a 5-fold cross validation. We found the average accuracy: .59 , precision:.66  , and recall: .72 . In addition, we found the variables with the lowest and highest logistic regression coefficients. Typically we saw proportion of household with illiterate members, proportion of household with no water connection outside the house as the highest indicators and proportion of  households who lacked a refrigerator and proportion of households with dirt floors as the most negative. The model thus found that areas with a greater percent of illiteracy and no water collection as indicators of receiving piso Firme and  greater proportions of households without refrigerators or with dirt floors as the greatest indicators of not getting PisoFirme. It is interesting that having more dirt floors indicates a shift towards not getting the treatment.  We also made visuals of those indicators to see how their distributions differed from treatment and control. 
+
 # Logistic Regression
 Here, we try to see if we can predict whether or not a house recieved the treatment based on the pre-treatment  variables. If we can predict whether or not the house received the treatment, we would have evidence to suggest that the treatment and control groups are not relatively equal, as claimed in the paper.
+
 ```{r Logistic-Regression}
 set.seed(42)
 household_dat$dpisofirme <- factor(household_dat$dpisofirme)
@@ -427,6 +451,7 @@ mean(as.numeric(precision))
 topterm
 bottomterm
 ```
+
 Visuals comparing some dependent variables with and without Dpisofirme 
 
 ```{r visuals}
@@ -438,6 +463,10 @@ ggplot(household_dat)+geom_histogram(aes(x=C_illiterate))+facet_grid(~dpisofirme
 ggplot(household_dat)+geom_histogram(aes(x=C_refrigerator))+facet_grid(~dpisofirme,labeller=labeller(dpisofirme=supp.labs))
 ggplot(household_dat)+geom_histogram(aes(x=C_HHdirtfloor))+facet_grid(~dpisofirme,labeller=labeller(dpisofirme=supp.labs))
 ```
+
+# Extension: R Squared
+
+As a further extension, we calculated R2 for the dependent variables for each of the three tables. This represents the proportion of the variance in the dependent variable that can be explained by the independent variable. Interestingly, we found that for each of the dependent variables, the R2 was relatively low. The highest R2 we found was for share of cement floors for model 3, and we found it to be 0.191.  We compared the R2 across the multiple models, and generally saw an increase as the number of control variables in the model increased. Furthermore, we plotted the model coefficients against the  R2 values to see if there was a correlation. When we first plotted this, the outliers made it difficult to notice any trends, so we then plotted it without the outliers. Generally, we found that when we disregard the outliers, we can see that coefficients closer to 1 or -1 tend to correspond to higher R2 values, while coefficients close to 0 have smaller R2 values. This is expected since higher absolute values of coefficients indicate that the given dependent variable has a stronger impact on the independent variable, and higher R2 values indicate that a higher proportion of the variance in the dependent variable can be explained by the independent variable.
 
 # R Squared
 Here, we compute r squared for each dependent variable. This is the amount of change in the dependent variable that can be explained by the independent variable. We calculate this for each model.
@@ -624,6 +653,23 @@ ggplot(plot_r_5,aes(x=Dependent,y=coeff))+geom_pointrange(aes(ymin=coeff-sce,yma
 ggplot(plot_r_6,aes(x=Dependent,y=coeff))+geom_pointrange(aes(ymin=coeff-sce,ymax=coeff+sce))+scale_x_discrete(labels=c(variables[13:17]))+facet_grid(~model_type)+labs(y=" R_sq",title="Table 6 R_sq by Model")+theme(axis.text = element_text(size=4,face="bold"))
 
 ```
+
+# Issues
+
+Our biggest struggle while recreating this paper was their use of clustering. The provided code was in Stata, which is not extremely transparent in its analysis. We were able to see that the data analysis was clustered by census block, however when we attempted to calculate it, we were puzzled by how to do it (especially with regards to regression). We learned that the regression was done through a Moran’s I test which measures spatial correlation. Since Stata does many of these things through built in packages, it was difficult for us to reproduce it in R. Instead we calculated the overall regression coefficients, which for the most part gave us very similar values, save for Table 5. Our table 5 values were quite off from that of the paper, which we assume is due to our differing regression technique. We also had trouble calculating clustered standard error. At first, our coefficients for Table 5 differed noticeably from those presented in the paper, while our coefficients for Tables 4 and 6 closely matched those in the paper. This table relied on a different data set, the individuals data set, which the other two relied on the households data set, so we assumed that the error related to how we read in or analyzed this data. When we first tried the regression, we replaced all na values with zero. However, after closer examination of the work of the researchers, we noticed that na values should be replaced with zero only for control variables, rather than everywhere. If there is an na value for some dependent variable for a given individual, we disregarded that individual when doing the regression. After making this amendment, our coefficients for Tables 4, 5, and 6 closely matched those presented in the paper. 
+
+
+# Works Cited: Original Paper
+
+Cattaneo, Matias D., Sebastian Galiani, Paul J. Gertler, Sebastian Martinez, and Rocio Titiunik. 
+2009. "Housing, Health, and Happiness." American Economic Journal: Economic Policy, 
+1 (1): 75-105.
+
+# Works Cited: Cited Paper
+
+A. Colin Cameron & Douglas L. Miller, 2015. "A Practitioner’s Guide to Cluster-Robust 
+Inference," Journal of Human Resources, University of Wisconsin Press, vol. 50(2), 
+pages 317-372.
 
 The following is a list of all packages used to generate these results. (Leave at very end of file.)
 
